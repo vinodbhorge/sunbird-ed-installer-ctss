@@ -89,7 +89,7 @@ commonAnnotations:
 
 
 serviceAccount:
-  create: true
+  create: false
 
 serviceMonitor:
   enabled: true
