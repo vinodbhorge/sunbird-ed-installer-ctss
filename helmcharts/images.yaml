@@ -209,7 +209,7 @@ images:
 
   telemetry: &telemetry
     repository: "ghcr.io/project-sunbird/sunbird-telemetry-service"
-    tag: "release-8.0.0_rc3_f082527_4"
+    tag: "release-8.1.1_rc1_3ab5b7e_7"
 
   nlweb: &nlweb
     repository: "sanketikahub/nlweb"
