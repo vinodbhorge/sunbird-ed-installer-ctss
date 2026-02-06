@@ -1,0 +1,62 @@
+name: aws-infra-opentofu
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment_dir:
+        description: "Path to OpenTofu environment directory (e.g. opentofu/aws/template)"
+        required: true
+        type: string
+      action:
+        description: "Action to perform"
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+
+permissions:
+  contents: read
+
+jobs:
+  terragrunt:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      TERRAGRUNT_TFPATH: tofu
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: "1.11.1"
+
+      - name: Setup Terragrunt
+        run: |
+          wget -O terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v0.96.0/terragrunt_linux_amd64
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Terragrunt Init
+        working-directory: ${{ inputs.environment_dir }}
+        run: terragrunt run --all init
+
+      - name: Terragrunt Plan
+        if: inputs.action == 'plan'
+        working-directory: ${{ inputs.environment_dir }}
+        run: terragrunt run --all plan
+
+      - name: Terragrunt Apply
+        if: inputs.action == 'apply'
+        working-directory: ${{ inputs.environment_dir }}
+        run: terragrunt run --all apply --auto-approve
