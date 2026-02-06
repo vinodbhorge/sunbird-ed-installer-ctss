@@ -1,6 +1,9 @@
 name: aws-infra-opentofu
 
 on:
+  push:
+    branches:
+      - infra-automation
   workflow_dispatch:
     inputs:
       environment_dir:
