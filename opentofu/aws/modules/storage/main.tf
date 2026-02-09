@@ -1,5 +1,10 @@
+# Get AWS account ID
+data "aws_caller_identity" "current" {}
+
 locals {
+  account_id       = data.aws_caller_identity.current.account_id
   environment_name = "${var.building_block}-${var.environment}"
+  bucket_prefix    = "${local.environment_name}-${local.account_id}"
   
   common_tags = {
     Environment    = var.environment
@@ -11,12 +16,12 @@ locals {
 
 # Public S3 bucket for public assets
 resource "aws_s3_bucket" "public" {
-  bucket = "${local.environment_name}-public"
+  bucket = "${local.bucket_prefix}-public"
   
   tags = merge(
     local.common_tags,
     {
-      Name = "${local.environment_name}-public"
+      Name = "${local.bucket_prefix}-public"
       Type = "public"
     }
   )
@@ -64,12 +69,12 @@ resource "aws_s3_bucket_cors_configuration" "public" {
 
 # Private S3 bucket for private data
 resource "aws_s3_bucket" "private" {
-  bucket = "${local.environment_name}-private"
+  bucket = "${local.bucket_prefix}-private"
   
   tags = merge(
     local.common_tags,
     {
-      Name = "${local.environment_name}-private"
+      Name = "${local.bucket_prefix}-private"
       Type = "private"
     }
   )
@@ -94,12 +99,12 @@ resource "aws_s3_bucket_versioning" "private" {
 
 # DIAL state S3 bucket
 # resource "aws_s3_bucket" "dial" {
-#   bucket = "${local.environment_name}-dial"
+#   bucket = "${local.bucket_prefix}-dial"
   
 #   tags = merge(
 #     local.common_tags,
 #     {
-#       Name = "${local.environment_name}-dial"
+#       Name = "${local.bucket_prefix}-dial"
 #       Type = "dial"
 #     }
 #   )
@@ -135,12 +140,12 @@ resource "aws_s3_bucket_versioning" "private" {
 
 # Velero backup S3 bucket
 # resource "aws_s3_bucket" "velero" {
-#   bucket = "${local.environment_name}-velero"
+#   bucket = "${local.bucket_prefix}-velero"
   
 #   tags = merge(
 #     local.common_tags,
 #     {
-#       Name = "${local.environment_name}-velero"
+#       Name = "${local.bucket_prefix}-velero"
 #       Type = "velero-backup"
 #     }
 #   )
