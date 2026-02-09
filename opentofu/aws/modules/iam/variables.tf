@@ -33,12 +33,12 @@ variable "storage_bucket_private" {
   type        = string
 }
 
-variable "dial_bucket" {
-  description = "DIAL state S3 bucket name"
-  type        = string
-}
+# variable "dial_bucket" {
+#   description = "DIAL state S3 bucket name"
+#   type        = string
+# }
 
-variable "velero_bucket" {
-  description = "Velero backup S3 bucket name"
-  type        = string
-}
+# variable "velero_bucket" {
+#   description = "Velero backup S3 bucket name"
+#   type        = string
+# }

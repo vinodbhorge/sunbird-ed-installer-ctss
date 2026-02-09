@@ -59,8 +59,8 @@ resource "aws_iam_role_policy" "sunbird_s3" {
           "arn:aws:s3:::${var.storage_bucket_private}",
           "arn:aws:s3:::${var.storage_bucket_public}/*",
           "arn:aws:s3:::${var.storage_bucket_public}",
-          "arn:aws:s3:::${var.dial_bucket}/*",
-          "arn:aws:s3:::${var.dial_bucket}"
+          # "arn:aws:s3:::${var.dial_bucket}/*",
+          # "arn:aws:s3:::${var.dial_bucket}"
         ]
       }
     ]
@@ -68,70 +68,70 @@ resource "aws_iam_role_policy" "sunbird_s3" {
 }
 
 # Velero service account IRSA role
-resource "aws_iam_role" "velero_sa" {
-  name = "${local.environment_name}-velero-sa"
+# resource "aws_iam_role" "velero_sa" {
+#   name = "${local.environment_name}-velero-sa"
   
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Federated = var.oidc_provider_arn
-      }
-      Action = "sts:AssumeRoleWithWebIdentity"
-      Condition = {
-        StringEquals = {
-          "${var.oidc_provider}:sub" : "system:serviceaccount:velero:velero-sa"
-          "${var.oidc_provider}:aud" : "sts.amazonaws.com"
-        }
-      }
-    }]
-  })
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [{
+#       Effect = "Allow"
+#       Principal = {
+#         Federated = var.oidc_provider_arn
+#       }
+#       Action = "sts:AssumeRoleWithWebIdentity"
+#       Condition = {
+#         StringEquals = {
+#           "${var.oidc_provider}:sub" : "system:serviceaccount:velero:velero-sa"
+#           "${var.oidc_provider}:aud" : "sts.amazonaws.com"
+#         }
+#       }
+#     }]
+#   })
   
-  tags = merge(
-    local.common_tags,
-    {
-      Name = "${local.environment_name}-velero-sa"
-    }
-  )
-}
+#   tags = merge(
+#     local.common_tags,
+#     {
+#       Name = "${local.environment_name}-velero-sa"
+#     }
+#   )
+# }
 
-# Velero backup policy
-resource "aws_iam_role_policy" "velero_backup" {
-  name = "velero-backup"
-  role = aws_iam_role.velero_sa.id
+# # Velero backup policy
+# resource "aws_iam_role_policy" "velero_backup" {
+#   name = "velero-backup"
+#   role = aws_iam_role.velero_sa.id
   
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:DescribeVolumes",
-          "ec2:DescribeSnapshots",
-          "ec2:CreateTags",
-          "ec2:CreateVolume",
-          "ec2:CreateSnapshot",
-          "ec2:DeleteSnapshot"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:DeleteObject",
-          "s3:PutObject",
-          "s3:AbortMultipartUpload",
-          "s3:ListMultipartUploadParts"
-        ]
-        Resource = "arn:aws:s3:::${var.velero_bucket}/*"
-      },
-      {
-        Effect = "Allow"
-        Action = "s3:ListBucket"
-        Resource = "arn:aws:s3:::${var.velero_bucket}"
-      }
-    ]
-  })
-}
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "ec2:DescribeVolumes",
+#           "ec2:DescribeSnapshots",
+#           "ec2:CreateTags",
+#           "ec2:CreateVolume",
+#           "ec2:CreateSnapshot",
+#           "ec2:DeleteSnapshot"
+#         ]
+#         Resource = "*"
+#       },
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "s3:GetObject",
+#           "s3:DeleteObject",
+#           "s3:PutObject",
+#           "s3:AbortMultipartUpload",
+#           "s3:ListMultipartUploadParts"
+#         ]
+#         Resource = "arn:aws:s3:::${var.velero_bucket}/*"
+#       },
+#       {
+#         Effect = "Allow"
+#         Action = "s3:ListBucket"
+#         Resource = "arn:aws:s3:::${var.velero_bucket}"
+#       }
+#     ]
+#   })
+# }

@@ -93,89 +93,89 @@ resource "aws_s3_bucket_versioning" "private" {
 }
 
 # DIAL state S3 bucket
-resource "aws_s3_bucket" "dial" {
-  bucket = "${local.environment_name}-dial"
+# resource "aws_s3_bucket" "dial" {
+#   bucket = "${local.environment_name}-dial"
   
-  tags = merge(
-    local.common_tags,
-    {
-      Name = "${local.environment_name}-dial"
-      Type = "dial"
-    }
-  )
-}
+#   tags = merge(
+#     local.common_tags,
+#     {
+#       Name = "${local.environment_name}-dial"
+#       Type = "dial"
+#     }
+#   )
+# }
 
-resource "aws_s3_bucket_public_access_block" "dial" {
-  bucket = aws_s3_bucket.dial.id
+# resource "aws_s3_bucket_public_access_block" "dial" {
+#   bucket = aws_s3_bucket.dial.id
   
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
-}
+#   block_public_acls       = false
+#   block_public_policy     = false
+#   ignore_public_acls      = false
+#   restrict_public_buckets = false
+# }
 
-resource "aws_s3_bucket_policy" "dial" {
-  bucket = aws_s3_bucket.dial.id
+# resource "aws_s3_bucket_policy" "dial" {
+#   bucket = aws_s3_bucket.dial.id
   
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.dial.arn}/*"
-      }
-    ]
-  })
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Sid       = "PublicReadGetObject"
+#         Effect    = "Allow"
+#         Principal = "*"
+#         Action    = "s3:GetObject"
+#         Resource  = "${aws_s3_bucket.dial.arn}/*"
+#       }
+#     ]
+#   })
   
-  depends_on = [aws_s3_bucket_public_access_block.dial]
-}
+#   depends_on = [aws_s3_bucket_public_access_block.dial]
+# }
 
 # Velero backup S3 bucket
-resource "aws_s3_bucket" "velero" {
-  bucket = "${local.environment_name}-velero"
+# resource "aws_s3_bucket" "velero" {
+#   bucket = "${local.environment_name}-velero"
   
-  tags = merge(
-    local.common_tags,
-    {
-      Name = "${local.environment_name}-velero"
-      Type = "velero-backup"
-    }
-  )
-}
+#   tags = merge(
+#     local.common_tags,
+#     {
+#       Name = "${local.environment_name}-velero"
+#       Type = "velero-backup"
+#     }
+#   )
+# }
 
-resource "aws_s3_bucket_public_access_block" "velero" {
-  bucket = aws_s3_bucket.velero.id
+# resource "aws_s3_bucket_public_access_block" "velero" {
+#   bucket = aws_s3_bucket.velero.id
   
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
+#   block_public_acls       = true
+#   block_public_policy     = true
+#   ignore_public_acls      = true
+#   restrict_public_buckets = true
+# }
 
-resource "aws_s3_bucket_versioning" "velero" {
-  bucket = aws_s3_bucket.velero.id
+# resource "aws_s3_bucket_versioning" "velero" {
+#   bucket = aws_s3_bucket.velero.id
   
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
+#   versioning_configuration {
+#     status = "Enabled"
+#   }
+# }
 
-resource "aws_s3_bucket_lifecycle_configuration" "velero" {
-  bucket = aws_s3_bucket.velero.id
+# resource "aws_s3_bucket_lifecycle_configuration" "velero" {
+#   bucket = aws_s3_bucket.velero.id
   
-  rule {
-    id     = "delete-old-backups"
-    status = "Enabled"
+#   rule {
+#     id     = "delete-old-backups"
+#     status = "Enabled"
     
-    expiration {
-      days = 30
-    }
+#     expiration {
+#       days = 30
+#     }
     
-    noncurrent_version_expiration {
-      noncurrent_days = 7
-    }
-  }
-}
+#     noncurrent_version_expiration {
+#       noncurrent_days = 7
+#     }
+#   }
+# }
