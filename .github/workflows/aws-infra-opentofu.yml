@@ -77,7 +77,7 @@ jobs:
         run: |
           source tf.sh
           export TF_INPUT=false
-          terragrunt --terragrunt-non-interactive run --all apply -- -auto-approve
+          terragrunt run --all apply -- -auto-approve
 
 
   # Please be cautious while running the destroy command as it will delete all the resources created by the apply command
@@ -87,4 +87,4 @@ jobs:
         run: |
           source tf.sh
           export TF_INPUT=false
-          terragrunt --terragrunt-non-interactive run --all destroy -- -auto-approve
+          terragrunt run --all destroy -- -auto-approve
