@@ -26,7 +26,7 @@ jobs:
       id-token: write
       contents: read
     env:
-      TERRAGRUNT_TFPATH: tofu
+      TG_TF_PATH: tofu
     steps:
       - name: Checkout
         uses: actions/checkout@v4
