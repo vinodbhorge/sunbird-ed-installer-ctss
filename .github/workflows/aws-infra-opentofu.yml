@@ -66,9 +66,13 @@ jobs:
       - name: Terragrunt Plan
         if: inputs.action == 'plan'
         working-directory: ${{ inputs.environment_dir }}
-        run: terragrunt run --all plan
+        run: |
+          source tf.sh
+          terragrunt run --all plan
 
       - name: Terragrunt Apply
         if: inputs.action == 'apply'
         working-directory: ${{ inputs.environment_dir }}
-        run: terragrunt run --all apply --auto-approve
+        run: |
+          source tf.sh
+          terragrunt run --all apply --auto-approve
