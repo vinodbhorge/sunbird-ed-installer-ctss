@@ -53,12 +53,15 @@ jobs:
         run: |
           chmod +x create_tf_backend.sh
           ./create_tf_backend.sh
+          ls -la
           source tf.sh
 
       - name: Terragrunt Init
         if: inputs.action == 'init'
         working-directory: ${{ inputs.environment_dir }}
-        run: terragrunt run --all init
+        run: |
+          source tf.sh
+          terragrunt run --all init
 
       - name: Terragrunt Plan
         if: inputs.action == 'plan'
