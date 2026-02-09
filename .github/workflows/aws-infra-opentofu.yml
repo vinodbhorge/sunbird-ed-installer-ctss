@@ -15,6 +15,7 @@ on:
           - init
           - plan
           - apply
+          - destroy
 
 permissions:
   contents: read
