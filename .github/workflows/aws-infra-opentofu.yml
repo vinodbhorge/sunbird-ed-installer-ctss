@@ -76,7 +76,8 @@ jobs:
         working-directory: ${{ inputs.environment_dir }}
         run: |
           source tf.sh
-          terragrunt run --all apply -auto-approve --non-interactive
+          export TF_INPUT=false
+          terragrunt --terragrunt-non-interactive run --all apply -- -auto-approve
 
 
   # Please be cautious while running the destroy command as it will delete all the resources created by the apply command
@@ -85,4 +86,5 @@ jobs:
         working-directory: ${{ inputs.environment_dir }}
         run: |
           source tf.sh
-          terragrunt run --all destroy --auto-approve
+          export TF_INPUT=false
+          terragrunt --terragrunt-non-interactive run --all destroy -- -auto-approve
