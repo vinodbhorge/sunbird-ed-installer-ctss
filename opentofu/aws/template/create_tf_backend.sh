@@ -47,7 +47,7 @@ fi
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
 # Construct resource names with account ID for global uniqueness
-BUCKET_NAME="${environment_name}-tfstate-${AWS_ACCOUNT_ID}"
+BUCKET_NAME="${environment_name}-${AWS_ACCOUNT_ID}-tfstate"
 
 echo "======================================"
 echo "AWS OpenTofu Backend Setup"

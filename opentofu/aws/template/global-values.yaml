@@ -36,7 +36,7 @@ kong:
   kong_pg_password: *postgresql-password
 
 global:
-  building_block: "sb-cts" # Building block name
+  building_block: "test" # Building block name
   env: "dev" # Short environment name
   environment: "dev" # Environment name (1-9 lowercase alphanumeric characters)
   release_version: "release-7.0.0"
@@ -54,11 +54,11 @@ global:
   # public_subnet_ids: []  # If create_network: false
 
   # EKS configuration
-  eks_cluster_version: "1.33"
-  eks_node_instance_type: "m6a.2xlarge"
-  eks_node_disk_size_gb: 70
-  eks_node_count_min: 4
-  eks_node_count_max: 5
+  eks_cluster_version: "1.35"
+  eks_node_instance_type: "t3.small"
+  eks_node_disk_size_gb: 20
+  eks_node_count_min: 1
+  eks_node_count_max: 2
   # Database (optional - set create_database: false if using external DB)
   create_database: false
   external_db_host: ""
