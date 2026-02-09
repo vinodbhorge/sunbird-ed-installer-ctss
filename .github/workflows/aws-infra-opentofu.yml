@@ -76,3 +76,11 @@ jobs:
         run: |
           source tf.sh
           terragrunt run --all apply --auto-approve
+
+  # Please be cautious while running the destroy command as it will delete all the resources created by the apply command
+      - name: Terragrunt Destroy
+        if: inputs.action == 'destroy'
+        working-directory: ${{ inputs.environment_dir }}
+        run: |
+          source tf.sh
+          terragrunt run --all destroy --auto-approve
