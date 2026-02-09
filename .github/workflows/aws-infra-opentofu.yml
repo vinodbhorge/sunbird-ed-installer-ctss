@@ -12,6 +12,7 @@ on:
         required: true
         type: choice
         options:
+          - init
           - plan
           - apply
 
@@ -48,6 +49,7 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Terragrunt Init
+        if: inputs.action == 'init'
         working-directory: ${{ inputs.environment_dir }}
         run: terragrunt run --all init
 
