@@ -1,0 +1,26 @@
+{{- if .Values.loadBalancerService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.names.fullname" . }}-nlb
+  namespace: {{ .Release.Namespace }}
+  labels: 
+    app: {{ include "common.names.fullname" . }}
+  {{- if .Values.loadBalancerService.annotations }}
+  annotations:
+    {{- toYaml .Values.loadBalancerService.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.loadBalancerService.type }}
+  externalTrafficPolicy: {{ .Values.loadBalancerService.externalTrafficPolicy }}
+  allocateLoadBalancerNodePorts: true
+  protocol: {{ .Values.loadBalancerService.protocol }}
+  ports:
+  {{- range .Values.loadBalancerService.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+  {{- end }}
+  selector:
+    app: {{ include "common.names.name" . }}
+{{- end }}

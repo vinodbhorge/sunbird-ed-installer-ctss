@@ -28,6 +28,16 @@ service:
       port: 9001
       targetPort: 9001
 
+loadBalancerService:
+  enabled: true
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  protocol: TCP
+  ports:
+    - name: http-telemetry
+      port: 9001
+      targetPort: 9001
+
 ingress:
   enabled: false
   annotations: {}
