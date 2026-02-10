@@ -23,7 +23,7 @@ resource "aws_iam_role" "sunbird_sa" {
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
-          "${var.oidc_provider}:sub" : ["system:serviceaccount:sunbird:sunbird-sa", "system:serviceaccount:dataset-api:dataset-api", "system:serviceaccount:command-api:command-api", "system:serviceaccount:flink:flink"]
+          "${var.oidc_provider}:sub" : ["system:serviceaccount:sunbird:sunbird-sa", "system:serviceaccount:dataset-api:dataset-api-sa", "system:serviceaccount:command-api:command-api-sa", "system:serviceaccount:flink:flink-sa"]
           "${var.oidc_provider}:aud" : "sts.amazonaws.com"
         }
       }
