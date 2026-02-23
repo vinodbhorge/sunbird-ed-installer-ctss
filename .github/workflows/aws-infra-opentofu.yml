@@ -23,7 +23,7 @@ permissions:
 jobs:
   terragrunt:
     runs-on: ubuntu-latest
-    environment: production
+    environment: test
     permissions:
       id-token: write
       contents: read
