@@ -57,8 +57,17 @@ global:
   eks_cluster_version: "1.35"
   eks_node_instance_type: "m6a.2xlarge"
   eks_node_disk_size_gb: 70
-  eks_node_count_min: 2
-  eks_node_count_max: 3
+  eks_node_count_min: 4
+  eks_node_count_max: 5
+
+  # CloudWatch monitoring (replaces Prometheus/Grafana stack)
+  enable_cloudwatch_observability: true
+  cloudwatch_enabled_log_types:
+    - api
+    - audit
+    - authenticator
+    - controllerManager
+    - scheduler
   # Database (optional - set create_database: false if using external DB)
   create_database: false
   external_db_host: ""

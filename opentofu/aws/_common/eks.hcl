@@ -8,6 +8,9 @@ locals {
   node_disk_size_gb   = local.global_vars.global.eks_node_disk_size_gb
   node_count_min      = local.global_vars.global.eks_node_count_min
   node_count_max      = local.global_vars.global.eks_node_count_max
+
+  enable_cloudwatch_observability = try(local.global_vars.global.enable_cloudwatch_observability, false)
+  cloudwatch_enabled_log_types    = try(local.global_vars.global.cloudwatch_enabled_log_types, ["api", "audit", "authenticator", "controllerManager", "scheduler"])
 }
 
 terraform {
@@ -34,4 +37,7 @@ inputs = {
   node_disk_size_gb       = local.node_disk_size_gb
   node_count_min          = local.node_count_min
   node_count_max          = local.node_count_max
+
+  enable_cloudwatch_observability = local.enable_cloudwatch_observability
+  cloudwatch_enabled_log_types    = local.cloudwatch_enabled_log_types
 }

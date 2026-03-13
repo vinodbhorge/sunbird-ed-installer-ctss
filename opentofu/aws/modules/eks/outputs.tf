@@ -48,3 +48,8 @@ output "private_lb_ip" {
   description = "Private load balancer IP"
   value       = var.private_ingressgateway_ip
 }
+
+output "cloudwatch_observability_role_arn" {
+  description = "IAM role ARN used by the CloudWatch Observability add-on"
+  value       = var.enable_cloudwatch_observability ? aws_iam_role.cloudwatch_observability[0].arn : null
+}

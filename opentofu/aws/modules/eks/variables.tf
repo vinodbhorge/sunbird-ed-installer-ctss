@@ -58,3 +58,15 @@ variable "private_ingressgateway_ip" {
     description = "Nginx private ingress ip."
     default = "10.0.0.10"
 }
+
+variable "cloudwatch_enabled_log_types" {
+  description = "EKS control plane log types to ship to CloudWatch Logs"
+  type        = list(string)
+  default     = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+}
+
+variable "enable_cloudwatch_observability" {
+  description = "Deploy the amazon-cloudwatch-observability EKS add-on for Container Insights"
+  type        = bool
+  default     = false
+}
