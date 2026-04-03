@@ -30,4 +30,8 @@ dependencies:
   - name: kafka
     repository: https://charts.bitnami.com/bitnami
     version: 20.0.2
-    condition: kafka.enabled 
+    condition: kafka.enabled
+  # - name: spark
+  #   repository: https://charts.bitnami.com/bitnami
+  #   version: 6.3.2
+  #   condition: spark.enabled

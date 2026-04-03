@@ -1,0 +1,32 @@
+# cluster-config.json
+model_version: "2.0"
+analytics_core_artifact: "analytics-framework-2.0.jar"
+analytics_core_artifact_ver: "2.0"
+analytics_batch_module_artifact: "batch-models-2.0.jar"
+spark_cluster:
+  executor_core: 5
+  executor_memory: 19G
+  num_executors: 5
+spark_enable_dynamic_allocation: false
+spark_sql_shuffle_partitions: 200
+
+#common.conf
+spark:
+  driver_memory: 7g
+  memory_fraction: 0.3
+  storage_fraction: 0.5
+  heap_conf_str: -Xmx5120m
+
+
+#model-config.sh
+analytics_job_queue_topic: "sunbirddev.analytics.job_queue"
+topic: "ingest"
+analytics_metrics_topic: "sunbirddev.analytics_metrics"
+sink_topic: "sunbirddev.telemetry.sink"
+metrics_topic: "sunbirddev.telemetry.metrics"
+producer_env: "dev.sunbird"
+spark_output_temp_dir: /data/analytics/tmp/
+dp_raw_telemetry_backup_location: "telemetry-data/unique/sb-telemetry/"
+
+# run-job.sh
+analytics_home: /data/analytics

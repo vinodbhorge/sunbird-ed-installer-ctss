@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: run-wfs-job
+spec:
+  schedule: "30 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: daily-cron-jobs-for-wfs
+            image: sunbirded.azurecr.io/kubectl:1.28.4
+            command:
+            - /bin/sh
+            - -c
+            - |
+              SPARK_POD=spark-master-0
+              kubectl exec -it $SPARK_POD -- bash -c "bash -x /data/analytics/scripts/run-job.sh wfs"
+          restartPolicy: OnFailure
+          serviceAccountName: spark-cronjob-sa

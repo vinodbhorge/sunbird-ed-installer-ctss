@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: {{ include "common.names.fullname" . }}-nlb
   namespace: {{ .Release.Namespace }}
-  labels: 
+  labels:
     app: {{ include "common.names.fullname" . }}
   {{- if .Values.loadBalancerService.annotations }}
   annotations:

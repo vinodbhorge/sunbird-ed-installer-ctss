@@ -35,8 +35,15 @@ postgresql:
 kong:
   kong_pg_password: *postgresql-password
 
+spark: &spark
+  serviceAccount:
+    create: true
+    name: "sunbird-sa"
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::522814700227:role/sunbird_bucket_role"
+
 global:
-  building_block: "test" # Building block name
+  building_block: "sb" # Building block name
   env: "dev" # Short environment name
   environment: "dev" # Environment name (1-9 lowercase alphanumeric characters)
   release_version: "release-7.0.0"
@@ -46,22 +53,28 @@ global:
   cloud_service_provider: "s3"
   sunbird_cloud_storage_provider: "aws"
   checkpoint_store_type: "s3"
-  cloud_storage_region: "ap-south-1" # e.g., us-east-1
+  cloud_storage_region: "us-east-1" # e.g., us-east-1
   # Network configuration (optional - set create_network: false if using existing VPC)
   create_network: "true"
+
+# Storage configuration 
+  storage_class: "gp3"
+  public_container_name: "sb-dev-public"
+  private_container_name: "sb-dev-private"
+  object_storage_endpoint: "s3.us-east-1.amazonaws.com" # e.g., s3.us-east-1.amazonaws.com
   # vpc_id: "" # If create_network: false, provide existing VPC ID
   # private_subnet_ids: [] # If create_network: false
   # public_subnet_ids: []  # If create_network: false
 
   # EKS configuration
   eks_cluster_version: "1.35"
-  eks_node_instance_type: "m6a.2xlarge"
-  eks_node_disk_size_gb: 70
-  eks_node_count_min: 4
-  eks_node_count_max: 5
+  eks_node_instance_type: "t3.xlarge"  # "m6a.2xlarge"
+  eks_node_disk_size_gb: 50
+  eks_node_count_min: 1
+  eks_node_count_max: 1
 
   # CloudWatch monitoring (replaces Prometheus/Grafana stack)
-  enable_cloudwatch_observability: true
+  enable_cloudwatch_observability: false
   cloudwatch_enabled_log_types:
     - api
     - audit
