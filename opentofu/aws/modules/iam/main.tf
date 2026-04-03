@@ -30,8 +30,9 @@ resource "aws_iam_role" "sunbird_sa" {
             "system:serviceaccount:druid-raw:druid-raw-sa",
             "system:serviceaccount:secor:secor-sa",
             "system:serviceaccount:postgresql:postgresql-backup-sa",
-            "system:serviceaccount:s3-exporter:s3-exporter-sa"
-            ]
+            "system:serviceaccount:s3-exporter:s3-exporter-sa",
+            "system:serviceaccount:spark:spark-sa"  
+          ]
           "${var.oidc_provider}:aud" : "sts.amazonaws.com"
         }
       }

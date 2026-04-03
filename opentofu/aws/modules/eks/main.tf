@@ -201,17 +201,17 @@ module "ebs_csi_driver_irsa" {
 # kubeconfig updater (local-exec)
 # -------------------------------
 
-resource "null_resource" "update_kubeconfig" {
-  triggers = {
-    cluster_endpoint = aws_eks_cluster.cluster.endpoint
-  }
+# resource "null_resource" "update_kubeconfig" {
+#   triggers = {
+#     cluster_endpoint = aws_eks_cluster.cluster.endpoint
+#   }
   
-  provisioner "local-exec" {
-    command = "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.cluster.name}"
-  }
+#   provisioner "local-exec" {
+#     command = "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.cluster.name}"
+#   }
   
-  depends_on = [aws_eks_cluster.cluster]
-}
+#   depends_on = [aws_eks_cluster.cluster]
+# }
 
 # -------------------------------
 # EKS Add-on: AWS EBS CSI Driver

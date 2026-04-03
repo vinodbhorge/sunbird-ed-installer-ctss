@@ -16,8 +16,6 @@ dependency "storage" {
   mock_outputs = {
     storage_bucket_public  = "dummy-public"
     storage_bucket_private = "dummy-private"
-    velero_bucket          = "dummy-velero"
-    dial_bucket            = "dummy-dial"
   }
 }
 
@@ -63,8 +61,6 @@ inputs = {
   building_block                = local.building_block
   aws_s3_public_bucket          = dependency.storage.outputs.storage_bucket_public
   aws_s3_private_bucket         = dependency.storage.outputs.storage_bucket_private
-  aws_s3_dial_bucket            = dependency.storage.outputs.dial_bucket
-  aws_s3_velero_bucket          = dependency.storage.outputs.velero_bucket
   aws_region                    = local.aws_region
   eks_cluster_name              = dependency.eks.outputs.cluster_name
   eks_oidc_provider             = dependency.eks.outputs.oidc_provider
