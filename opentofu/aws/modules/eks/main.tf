@@ -81,14 +81,14 @@ resource "aws_iam_role_policy_attachment" "node_AmazonEKS_CNI_Policy" {
 
 resource "aws_eks_cluster" "cluster" {
   name     = local.cluster_name
-  version  = "${var.cluster_version}"
+  version  = var.cluster_version
   role_arn = aws_iam_role.eks_cluster.arn
 
   vpc_config {
     subnet_ids         = var.public_subnet_ids
     security_group_ids = var.security_group_ids
-    endpoint_public_access  = true
-    endpoint_private_access = false
+    endpoint_public_access  = var.endpoint_public_access
+    endpoint_private_access = var.endpoint_private_access
   }
 
   enabled_cluster_log_types = var.cloudwatch_enabled_log_types

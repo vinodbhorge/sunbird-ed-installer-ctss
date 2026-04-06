@@ -76,3 +76,15 @@ variable "enable_cloudwatch_observability" {
   type        = bool
   default     = false
 }
+
+variable "endpoint_public_access" {
+  description = "Whether the EKS API server endpoint is publicly accessible"
+  type        = bool
+  default     = true
+}
+
+variable "endpoint_private_access" {
+  description = "Whether the EKS API server endpoint is accessible within the VPC"
+  type        = bool
+  default     = false
+}

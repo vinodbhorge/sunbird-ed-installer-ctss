@@ -10,7 +10,8 @@ terraform {
 }
 
 inputs = {
-  environment     = local.environment
-  building_block  = local.building_block
-  aws_region      = local.aws_region
+  environment          = local.environment
+  building_block       = local.building_block
+  aws_region           = local.aws_region
+  cors_max_age_seconds = lookup(local.global_vars.global, "cors_max_age_seconds", 3000)
 }

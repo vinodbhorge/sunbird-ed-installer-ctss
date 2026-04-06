@@ -63,7 +63,7 @@ resource "aws_s3_bucket_cors_configuration" "public" {
     allowed_methods = ["GET", "HEAD", "PUT"]
     allowed_origins = ["*"]
     expose_headers  = ["ETag"]
-    max_age_seconds = 3000
+    max_age_seconds = var.cors_max_age_seconds
   }
 }
 

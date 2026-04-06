@@ -33,6 +33,20 @@ variable "storage_bucket_private" {
   type        = string
 }
 
+variable "service_account_subjects" {
+  description = "List of Kubernetes service account subjects allowed to assume the Sunbird IAM role (format: system:serviceaccount:<namespace>:<sa-name>)"
+  type        = list(string)
+  default = [
+    "system:serviceaccount:sunbird:sunbird-sa",
+    "system:serviceaccount:dataset-api:dataset-api-sa",
+    "system:serviceaccount:flink:flink-sa",
+    "system:serviceaccount:druid-raw:druid-raw-sa",
+    "system:serviceaccount:secor:secor-sa",
+    "system:serviceaccount:postgresql:postgresql-backup-sa",
+    "system:serviceaccount:s3-exporter:s3-exporter-sa"
+  ]
+}
+
 # variable "dial_bucket" {
 #   description = "DIAL state S3 bucket name"
 #   type        = string
