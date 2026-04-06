@@ -29,7 +29,7 @@ service:
       targetPort: 9001
 
 loadBalancerService:
-  enabled: true
+  enabled: false
   type: LoadBalancer
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-type: nlb
