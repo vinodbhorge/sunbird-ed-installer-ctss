@@ -40,12 +40,12 @@ spark: &spark
     create: true
     name: "sunbird-sa"
     annotations:
-      eks.amazonaws.com/role-arn: "arn:aws:iam::522814700227:role/sunbird_bucket_role"
+      eks.amazonaws.com/role-arn: ""
 
 global:
-  building_block: "sb" # Building block name
-  env: "dev" # Short environment name
-  environment: "dev" # Environment name (1-9 lowercase alphanumeric characters)
+  building_block: "spark" # Building block name
+  env: "test" # Short environment name
+  environment: "test" # Environment name (1-9 lowercase alphanumeric characters)
   release_version: "release-7.0.0"
   
   # AWS-specific configuration
@@ -53,15 +53,14 @@ global:
   cloud_service_provider: "s3"
   sunbird_cloud_storage_provider: "aws"
   checkpoint_store_type: "s3"
-  cloud_storage_region: "us-east-1" # e.g., us-east-1
+  cloud_storage_region: "ap-south-1" # e.g., us-east-1
   # Network configuration (optional - set create_network: false if using existing VPC)
   create_network: "true"
 
 # Storage configuration 
   storage_class: "gp3"
-  public_container_name: "sb-dev-public"
-  private_container_name: "sb-dev-private"
-  object_storage_endpoint: "s3.us-east-1.amazonaws.com" # e.g., s3.us-east-1.amazonaws.com
+  private_container_name: ""
+  object_storage_endpoint: "s3.ap-south-1.amazonaws.com" # e.g., s3.us-east-1.amazonaws.com
   # vpc_id: "" # If create_network: false, provide existing VPC ID
   # private_subnet_ids: [] # If create_network: false
   # public_subnet_ids: []  # If create_network: false
