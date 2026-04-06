@@ -67,8 +67,26 @@ global:
   # eks_endpoint_public_access: true  # Expose EKS API server publicly
   # eks_endpoint_private_access: false # Expose EKS API server within VPC
 
+  # S3 bucket definitions — add as many buckets as needed.
+  # Key becomes the suffix: <building_block>-<env>-<account_id>-<key>
+  # type: "public"  → publicly readable, optional CORS
+  # type: "private" → fully blocked public access, optional versioning
+  buckets:
+    public:
+      type: public
+      cors_enabled: true
+    private:
+      type: private
+      versioning_enabled: true
+    # dial:
+    #   type: public
+    #   cors_enabled: true
+    # velero:
+    #   type: private
+    #   versioning_enabled: true
+
   # S3 CORS (optional override)
-  # cors_max_age_seconds: 3000        # Max-age for CORS preflight cache on the public bucket
+  # cors_max_age_seconds: 3000        # Max-age for CORS preflight cache on cors-enabled buckets
 
   # IAM service account subjects (optional override — add/remove namespaces here)
   # service_account_subjects:

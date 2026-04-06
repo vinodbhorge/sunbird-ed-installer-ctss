@@ -14,10 +14,14 @@ dependency "storage" {
   config_path = "../storage"
   mock_outputs_merge_strategy_with_state = "shallow"
   mock_outputs = {
+    buckets = {
+      public  = { id = "dummy-public",  arn = "arn:aws:s3:::dummy-public",  domain = "dummy-public.s3.amazonaws.com",  type = "public" }
+      private = { id = "dummy-private", arn = "arn:aws:s3:::dummy-private", domain = "dummy-private.s3.amazonaws.com", type = "private" }
+    }
     storage_bucket_public  = "dummy-public"
     storage_bucket_private = "dummy-private"
-    velero_bucket          = "dummy-velero"
-    dial_bucket            = "dummy-dial"
+    velero_bucket          = null
+    dial_bucket            = null
   }
 }
 
