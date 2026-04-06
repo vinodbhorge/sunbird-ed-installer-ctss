@@ -92,6 +92,8 @@ global:
   eks_node_count_max: 5
   # eks_endpoint_public_access: true  # Expose EKS API server publicly
   # eks_endpoint_private_access: false # Expose EKS API server within VPC
+  # eks_node_count_desired: 3          # pre-warm above min
+  # eks_ebs_csi_addon_version: "v1.28.0-eksbuild.1"  # pin addon version
 
   # S3 bucket definitions — add as many buckets as needed.
   # Key becomes the suffix: <building_block>-<env>-<account_id>-<key>

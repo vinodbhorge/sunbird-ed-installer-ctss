@@ -41,8 +41,6 @@ inputs = {
   oidc_provider              = dependency.eks.outputs.oidc_provider
   storage_bucket_public      = dependency.storage.outputs.storage_bucket_public
   storage_bucket_private     = dependency.storage.outputs.storage_bucket_private
-  dial_bucket                = dependency.storage.outputs.dial_bucket
-  velero_bucket              = dependency.storage.outputs.velero_bucket
   service_account_subjects   = lookup(local.global_vars.global, "service_account_subjects", [
     "system:serviceaccount:sunbird:sunbird-sa",
     "system:serviceaccount:dataset-api:dataset-api-sa",

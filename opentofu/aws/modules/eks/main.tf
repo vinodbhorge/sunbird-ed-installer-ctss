@@ -131,7 +131,7 @@ resource "aws_eks_node_group" "default" {
   subnet_ids      = var.public_subnet_ids
 
   scaling_config {
-    desired_size = var.node_count_min
+    desired_size = coalesce(var.node_count_desired, var.node_count_min)
     min_size     = var.node_count_min
     max_size     = var.node_count_max
   }
@@ -176,28 +176,6 @@ module "ebs_csi_driver_irsa" {
 }
 
 # -------------------------------
-# AWS Load Balancer Controller IRSA role
-# -------------------------------
-
-# module "aws_load_balancer_controller_irsa" {
-#   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-#   version = "~> 5.48"
-  
-#   role_name_prefix = "${local.cluster_name}-aws-lb-controller-"
-  
-#   attach_load_balancer_controller_policy = true
-  
-#   oidc_providers = {
-#     main = {
-#       provider_arn               = aws_iam_openid_connect_provider.oidc.arn
-#       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
-#     }
-#   }
-  
-#   tags = local.common_tags
-# }
-
-# -------------------------------
 # kubeconfig updater (local-exec)
 # -------------------------------
 
@@ -225,8 +203,8 @@ resource "aws_eks_addon" "ebs_csi" {
   # Use the IRSA role created above for the controller service account
   service_account_role_arn = module.ebs_csi_driver_irsa.iam_role_arn
 
-  # Let AWS pick the latest compatible version unless specified
-  # addon_version = var.ebs_csi_addon_version
+  # Pin to a specific version or leave null to let AWS pick the latest compatible version
+  addon_version = var.ebs_csi_addon_version
 
   # Ensure the addon can reconcile any existing resources
   resolve_conflicts_on_create = "OVERWRITE"
@@ -296,31 +274,3 @@ resource "aws_eks_addon" "cloudwatch_observability" {
   ]
 }
 
-# Create internal load balancer for private ingress
-# resource "kubernetes_service" "private_lb_placeholder" {
-#   metadata {
-#     name      = "private-lb-placeholder"
-#     namespace = "default"
-#     annotations = {
-#       "service.beta.kubernetes.io/aws-load-balancer-type"                              = "nlb"
-#       "service.beta.kubernetes.io/aws-load-balancer-internal"                          = "true"
-#       "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
-#     }
-#   }
-  
-#   spec {
-#     type = "LoadBalancer"
-    
-#     port {
-#       port        = 80
-#       target_port = 80
-#       protocol    = "TCP"
-#     }
-    
-#     selector = {
-#       app = "private-lb-placeholder"
-#     }
-#   }
-  
-#   depends_on = [aws_eks_cluster.cluster, aws_eks_node_group.default]
-# }

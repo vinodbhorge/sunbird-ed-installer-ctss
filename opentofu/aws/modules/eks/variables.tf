@@ -53,10 +53,22 @@ variable "node_count_max" {
   default     = 3
 }
 
+variable "node_count_desired" {
+  description = "Initial desired number of worker nodes. Defaults to node_count_min when null."
+  type        = number
+  default     = null
+}
+
+variable "ebs_csi_addon_version" {
+  description = "Version of the aws-ebs-csi-driver EKS add-on (e.g. \"v1.28.0-eksbuild.1\"). Null lets AWS select the latest compatible version."
+  type        = string
+  default     = null
+}
+
 variable "private_ingressgateway_ip" {
-    type        = string
-    description = "Nginx private ingress ip."
-    default = "10.0.0.10"
+  type        = string
+  description = "IP of the private ingress gateway (NLB/ingress controller). Must be set by the caller after the ingress is deployed; not auto-discovered by this module."
+  default     = null
 }
 
 variable "cloudwatch_enabled_log_types" {
