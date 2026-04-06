@@ -1,4 +1,4 @@
 kafka:
   enabled: false
 telemetry:
-  enabled: false
+  enabled: true
