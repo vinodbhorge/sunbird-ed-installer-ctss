@@ -55,25 +55,10 @@ jobs:
 
       - name: Install obsrvbb
         if: inputs.action == 'install'
-        working-directory: helmcharts
+        working-directory: opentofu/aws/template
         run: |
-          kubectl create namespace sunbird 2>/dev/null || true
-
-          ED_VALUES_FLAG=""
-          if [ -f "obsrvbb/ed-values.yaml" ]; then
-            ED_VALUES_FLAG="-f obsrvbb/ed-values.yaml --wait --wait-for-jobs"
-          fi
-
-          helm upgrade --install obsrvbb obsrvbb \
-            --namespace sunbird \
-            -f obsrvbb/values.yaml \
-            $ED_VALUES_FLAG \
-            -f images.yaml \
-            -f global-resources.yaml \
-            -f "../${{ inputs.environment_dir }}/global-values.yaml" \
-            -f "../${{ inputs.environment_dir }}/global-cloud-values.yaml" \
-            --timeout 30m \
-            --debug
+          chmod +x install.sh
+          bash install.sh install_component "obsrvbb" </dev/null
 
       - name: Uninstall obsrvbb
         if: inputs.action == 'uninstall'
