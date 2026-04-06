@@ -208,8 +208,8 @@ images:
     tag: "release-7.0.0"
 
   telemetry: &telemetry
-    repository: "061051225269.dkr.ecr.us-east-1.amazonaws.com/lms_sb_sunbird-telemetry-service"
-    tag: "R1_TELEMETRY.200326-16"
+    repository: "ghcr.io/project-sunbird/sunbird-telemetry-service"
+    tag: "v8.1.2-rc1_28fecc9_16"
 
   nlweb: &nlweb
     repository: "sanketikahub/nlweb"

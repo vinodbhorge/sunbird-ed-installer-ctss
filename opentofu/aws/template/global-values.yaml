@@ -40,7 +40,7 @@ spark: &spark
     create: true
     name: "sunbird-sa"
     annotations:
-      eks.amazonaws.com/role-arn: ""
+      eks.amazonaws.com/role-arn: "arn:aws:iam::725876873105:role/spark-test-sunbird-sa"
 
 global:
   building_block: "spark" # Building block name
@@ -59,7 +59,7 @@ global:
 
 # Storage configuration 
   storage_class: "gp3"
-  private_container_name: ""
+  private_container_name: "spark-test-725876873105-private"
   object_storage_endpoint: "s3.ap-south-1.amazonaws.com" # e.g., s3.us-east-1.amazonaws.com
   # vpc_id: "" # If create_network: false, provide existing VPC ID
   # private_subnet_ids: [] # If create_network: false
