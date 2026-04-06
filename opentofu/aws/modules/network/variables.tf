@@ -25,26 +25,56 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "subnet_count" {
-  description = "Number of public subnets to create"
-  type        = number
-  default     = 2
+variable "subnet_config" {
+  description = <<-EOT
+    Map of logical subnet name to configuration. The subnet CIDR is derived as:
+      cidrsubnet(vpc_cidr, 8, cidr_netnum)
+
+    Fields:
+      type              - "public" or "private" (required)
+      availability_zone - AZ suffix, e.g. "a", "b", "c" (required)
+      cidr_netnum       - unique integer offset for cidrsubnet(), e.g. 101, 102, 201, 202 (required)
+
+    Public subnets  -> Internet Gateway route, map_public_ip_on_launch = true.
+    Private subnets -> NAT Gateway route (when nat_gateway_enabled = true), no public IPs.
+  EOT
+  type = map(object({
+    type              = string
+    availability_zone = string
+    cidr_netnum       = number
+  }))
+  default = {
+    public-a = { type = "public", availability_zone = "a", cidr_netnum = 101 }
+    public-b = { type = "public", availability_zone = "b", cidr_netnum = 102 }
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.subnet_config : contains(["public", "private"], v.type)
+    ])
+    error_message = "Each subnet 'type' must be either \"public\" or \"private\"."
+  }
+
+  validation {
+    condition = length(var.subnet_config) == length(distinct([
+      for k, v in var.subnet_config : v.cidr_netnum
+    ]))
+    error_message = "Each subnet must have a unique cidr_netnum to avoid CIDR conflicts."
+  }
 }
 
-variable "availability_zones" {
-  description = "List of AZ suffixes (e.g. [\"a\", \"b\"]) to spread subnets across"
-  type        = list(string)
-  default     = ["a", "b"]
-}
-
-variable "subnet_cidr_offset" {
-  description = "Starting netnum offset passed to cidrsubnet() for public subnets (e.g. 101 yields 10.0.101.0/24, 10.0.102.0/24, ...)"
-  type        = number
-  default     = 101
+variable "nat_gateway_enabled" {
+  description = <<-EOT
+    Create a NAT Gateway so private subnets can reach the internet.
+    Requires at least one public subnet (NAT GW is placed in the first public subnet).
+    Set to false for fully isolated private subnets or to save cost in non-prod environments.
+  EOT
+  type    = bool
+  default = true
 }
 
 variable "ingress_cidr_blocks" {
-  description = "CIDR blocks allowed for HTTP/HTTPS inbound traffic"
+  description = "CIDR blocks allowed for HTTP/HTTPS inbound traffic on the shared security group"
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }

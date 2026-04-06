@@ -52,11 +52,36 @@ global:
   # vpc_id: "" # If create_network: false, provide existing VPC ID
   # private_subnet_ids: [] # If create_network: false
   # public_subnet_ids: []  # If create_network: false
-  # vpc_cidr: "10.0.0.0/16"          # CIDR block for the new VPC
-  # subnet_count: 2                   # Number of public subnets to create
-  # availability_zones: ["a", "b"]    # AZ suffixes (e.g. "a","b","c")
-  # subnet_cidr_offset: 101           # cidrsubnet() starting netnum for public subnets
-  # ingress_cidr_blocks: ["0.0.0.0/0"] # Allowed CIDRs for HTTP/HTTPS inbound
+  # vpc_cidr: "10.0.0.0/16"           # CIDR block for the new VPC
+  # ingress_cidr_blocks: ["0.0.0.0/0"] # Allowed CIDRs for HTTP/HTTPS inbound security group
+
+  # Subnet definitions — add/remove entries to control what gets provisioned.
+  # Each key becomes the subnet logical name (used in tags and outputs).
+  # cidr_netnum is the offset for cidrsubnet(vpc_cidr, 8, N):
+  #   101 → 10.0.101.0/24 | 102 → 10.0.102.0/24 | 201 → 10.0.201.0/24, etc.
+  subnet_config:
+    public-a:
+      type: public
+      availability_zone: "a"
+      cidr_netnum: 101
+    public-b:
+      type: public
+      availability_zone: "b"
+      cidr_netnum: 102
+    # Add private subnets below to enable private networking.
+    # A NAT Gateway is automatically created when private subnets exist (see nat_gateway_enabled).
+    # private-a:
+    #   type: private
+    #   availability_zone: "a"
+    #   cidr_netnum: 201
+    # private-b:
+    #   type: private
+    #   availability_zone: "b"
+    #   cidr_netnum: 202
+
+  # NAT Gateway — set to false to keep private subnets fully isolated (saves cost in non-prod).
+  # Has no effect when no private subnets are defined.
+  # nat_gateway_enabled: true
 
   # EKS configuration
   eks_cluster_version: "1.35"
@@ -86,20 +111,20 @@ global:
     #   versioning_enabled: true
 
   # S3 CORS (optional override)
-  # cors_max_age_seconds: 3000        # Max-age for CORS preflight cache on cors-enabled buckets
+  cors_max_age_seconds: 3000        # Max-age for CORS preflight cache on cors-enabled buckets
 
   # IAM service account subjects (optional override — add/remove namespaces here)
-  # service_account_subjects:
-  #   - "system:serviceaccount:sunbird:sunbird-sa"
-  #   - "system:serviceaccount:dataset-api:dataset-api-sa"
-  #   - "system:serviceaccount:flink:flink-sa"
-  #   - "system:serviceaccount:druid-raw:druid-raw-sa"
-  #   - "system:serviceaccount:secor:secor-sa"
-  #   - "system:serviceaccount:postgresql:postgresql-backup-sa"
-  #   - "system:serviceaccount:s3-exporter:s3-exporter-sa"
+  service_account_subjects:
+    - "system:serviceaccount:sunbird:sunbird-sa"
+    - "system:serviceaccount:dataset-api:dataset-api-sa"
+    - "system:serviceaccount:flink:flink-sa"
+    - "system:serviceaccount:druid-raw:druid-raw-sa"
+    - "system:serviceaccount:secor:secor-sa"
+    - "system:serviceaccount:postgresql:postgresql-backup-sa"
+    - "system:serviceaccount:s3-exporter:s3-exporter-sa"
 
   # CloudWatch monitoring (replaces Prometheus/Grafana stack)
-  enable_cloudwatch_observability: true
+  enable_cloudwatch_observability: false
   cloudwatch_enabled_log_types:
     - api
     - audit
