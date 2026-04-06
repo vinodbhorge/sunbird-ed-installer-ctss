@@ -92,6 +92,10 @@ resource "aws_eks_cluster" "cluster" {
 
   enabled_cluster_log_types = var.cloudwatch_enabled_log_types
 
+  access_config {
+    authentication_mode = "API_AND_CONFIG_MAP"
+  }
+
   tags = merge(local.common_tags, { Name = local.cluster_name })
 
   depends_on = [
