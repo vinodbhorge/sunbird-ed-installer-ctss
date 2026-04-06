@@ -26,7 +26,7 @@ sink_topic: "sunbirddev.telemetry.sink"
 metrics_topic: "sunbirddev.telemetry.metrics"
 producer_env: "dev.sunbird"
 spark_output_temp_dir: /data/analytics/tmp/
-dp_raw_telemetry_backup_location: "telemetry-data/unique/sb-telemetry/"
+dp_raw_telemetry_backup_location: "telemetry-data/unique/"
 
 # run-job.sh
 analytics_home: /data/analytics

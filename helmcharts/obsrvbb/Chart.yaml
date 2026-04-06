@@ -31,6 +31,8 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     version: 20.0.2
     condition: kafka.enabled
+  - name: telemetry
+    condition: telemetry.enabled
   # - name: spark
   #   repository: https://charts.bitnami.com/bitnami
   #   version: 6.3.2

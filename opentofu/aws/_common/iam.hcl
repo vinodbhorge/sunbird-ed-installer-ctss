@@ -22,10 +22,7 @@ dependency "storage" {
   config_path = "../storage"
   mock_outputs_merge_strategy_with_state = "shallow"
   mock_outputs = {
-    storage_bucket_public  = "dummy-public-bucket"
     storage_bucket_private = "dummy-private-bucket"
-    dial_bucket            = "dummy-dial-bucket"
-    velero_bucket          = "dummy-velero-bucket"
   }
 }
 
@@ -35,8 +32,5 @@ inputs = {
   aws_region                 = local.aws_region
   oidc_provider_arn          = dependency.eks.outputs.oidc_provider_arn
   oidc_provider              = dependency.eks.outputs.oidc_provider
-  storage_bucket_public      = dependency.storage.outputs.storage_bucket_public
   storage_bucket_private     = dependency.storage.outputs.storage_bucket_private
-  dial_bucket                = dependency.storage.outputs.dial_bucket
-  velero_bucket              = dependency.storage.outputs.velero_bucket
 }

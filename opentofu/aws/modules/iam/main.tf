@@ -65,9 +65,9 @@ resource "aws_iam_role_policy" "sunbird_s3" {
         ]
         Resource = [
           "arn:aws:s3:::${var.storage_bucket_private}/*",
-          "arn:aws:s3:::${var.storage_bucket_private}",
-          "arn:aws:s3:::${var.storage_bucket_public}/*",
-          "arn:aws:s3:::${var.storage_bucket_public}",
+          "arn:aws:s3:::${var.storage_bucket_private}"
+          # "arn:aws:s3:::${var.storage_bucket_public}/*",
+          # "arn:aws:s3:::${var.storage_bucket_public}",
           # "arn:aws:s3:::${var.dial_bucket}/*",
           # "arn:aws:s3:::${var.dial_bucket}"
         ]

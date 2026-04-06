@@ -1,17 +1,17 @@
-output "storage_bucket_public" {
-  description = "Public S3 bucket name"
-  value       = aws_s3_bucket.public.id
-}
+# output "storage_bucket_public" {
+#   description = "Public S3 bucket name"
+#   value       = aws_s3_bucket.public.id
+# }
 
-output "storage_bucket_public_arn" {
-  description = "Public S3 bucket ARN"
-  value       = aws_s3_bucket.public.arn
-}
+# output "storage_bucket_public_arn" {
+#   description = "Public S3 bucket ARN"
+#   value       = aws_s3_bucket.public.arn
+# }
 
-output "storage_bucket_public_domain" {
-  description = "Public S3 bucket domain name"
-  value       = aws_s3_bucket.public.bucket_regional_domain_name
-}
+# output "storage_bucket_public_domain" {
+#   description = "Public S3 bucket domain name"
+#   value       = aws_s3_bucket.public.bucket_regional_domain_name
+# }
 
 output "storage_bucket_private" {
   description = "Private S3 bucket name"

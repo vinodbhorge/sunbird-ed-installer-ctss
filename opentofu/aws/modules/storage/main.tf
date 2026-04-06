@@ -15,57 +15,57 @@ locals {
 }
 
 # Public S3 bucket for public assets
-resource "aws_s3_bucket" "public" {
-  bucket = "${local.bucket_prefix}-public"
+# resource "aws_s3_bucket" "public" {
+#   bucket = "${local.bucket_prefix}-public"
   
-  tags = merge(
-    local.common_tags,
-    {
-      Name = "${local.bucket_prefix}-public"
-      Type = "public"
-    }
-  )
-}
+#   tags = merge(
+#     local.common_tags,
+#     {
+#       Name = "${local.bucket_prefix}-public"
+#       Type = "public"
+#     }
+#   )
+# }
 
-resource "aws_s3_bucket_public_access_block" "public" {
-  bucket = aws_s3_bucket.public.id
+# resource "aws_s3_bucket_public_access_block" "public" {
+#   bucket = aws_s3_bucket.public.id
   
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
-}
+#   block_public_acls       = false
+#   block_public_policy     = false
+#   ignore_public_acls      = false
+#   restrict_public_buckets = false
+# }
 
-resource "aws_s3_bucket_policy" "public" {
-  bucket = aws_s3_bucket.public.id
+# resource "aws_s3_bucket_policy" "public" {
+#   bucket = aws_s3_bucket.public.id
   
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.public.arn}/*"
-      }
-    ]
-  })
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Sid       = "PublicReadGetObject"
+#         Effect    = "Allow"
+#         Principal = "*"
+#         Action    = "s3:GetObject"
+#         Resource  = "${aws_s3_bucket.public.arn}/*"
+#       }
+#     ]
+#   })
   
-  depends_on = [aws_s3_bucket_public_access_block.public]
-}
+#   depends_on = [aws_s3_bucket_public_access_block.public]
+# }
 
-resource "aws_s3_bucket_cors_configuration" "public" {
-  bucket = aws_s3_bucket.public.id
+# resource "aws_s3_bucket_cors_configuration" "public" {
+#   bucket = aws_s3_bucket.public.id
   
-  cors_rule {
-    allowed_headers = ["*"]
-    allowed_methods = ["GET", "HEAD", "PUT"]
-    allowed_origins = ["*"]
-    expose_headers  = ["ETag"]
-    max_age_seconds = 3000
-  }
-}
+#   cors_rule {
+#     allowed_headers = ["*"]
+#     allowed_methods = ["GET", "HEAD", "PUT"]
+#     allowed_origins = ["*"]
+#     expose_headers  = ["ETag"]
+#     max_age_seconds = 3000
+#   }
+# }
 
 # Private S3 bucket for private data
 resource "aws_s3_bucket" "private" {
