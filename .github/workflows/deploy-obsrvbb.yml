@@ -1,0 +1,81 @@
+name: deploy-obsrvbb
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment_dir:
+        description: "Path to environment config directory (e.g. opentofu/aws/template)"
+        required: true
+        type: string
+        default: "opentofu/aws/template"
+      eks_cluster_name:
+        description: "EKS cluster name"
+        required: true
+        type: string
+      action:
+        description: "Action to perform"
+        required: true
+        type: choice
+        options:
+          - install
+          - uninstall
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-obsrvbb:
+    runs-on: ubuntu-latest
+    environment: test
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Get EKS kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ inputs.eks_cluster_name }} \
+            --region ${{ vars.AWS_REGION }}
+
+      - name: Install obsrvbb
+        if: inputs.action == 'install'
+        working-directory: helmcharts
+        run: |
+          kubectl create namespace sunbird 2>/dev/null || true
+
+          ED_VALUES_FLAG=""
+          if [ -f "obsrvbb/ed-values.yaml" ]; then
+            ED_VALUES_FLAG="-f obsrvbb/ed-values.yaml --wait --wait-for-jobs"
+          fi
+
+          helm upgrade --install obsrvbb obsrvbb \
+            --namespace sunbird \
+            -f obsrvbb/values.yaml \
+            $ED_VALUES_FLAG \
+            -f images.yaml \
+            -f global-resources.yaml \
+            -f "../${{ inputs.environment_dir }}/global-values.yaml" \
+            -f "../${{ inputs.environment_dir }}/global-cloud-values.yaml" \
+            --timeout 30m \
+            --debug
+
+      - name: Uninstall obsrvbb
+        if: inputs.action == 'uninstall'
+        run: |
+          helm uninstall obsrvbb --namespace sunbird || true
