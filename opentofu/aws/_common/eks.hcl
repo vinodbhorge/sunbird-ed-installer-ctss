@@ -23,6 +23,7 @@ dependency "network" {
   mock_outputs = {
     vpc_id              = "vpc-dummy"
     public_subnet_ids   = ["subnet-dummy-3", "subnet-dummy-4"]
+    security_group_id   = "sg-dummy"
   }
 }
 
@@ -40,4 +41,5 @@ inputs = {
 
   enable_cloudwatch_observability = local.enable_cloudwatch_observability
   cloudwatch_enabled_log_types    = local.cloudwatch_enabled_log_types
+  security_group_ids              = [dependency.network.outputs.security_group_id]
 }

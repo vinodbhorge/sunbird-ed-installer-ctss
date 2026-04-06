@@ -65,6 +65,12 @@ variable "cloudwatch_enabled_log_types" {
   default     = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 }
 
+variable "security_group_ids" {
+  description = "Security group IDs to attach to the EKS cluster"
+  type        = list(string)
+  default     = []
+}
+
 variable "enable_cloudwatch_observability" {
   description = "Deploy the amazon-cloudwatch-observability EKS add-on for Container Insights"
   type        = bool

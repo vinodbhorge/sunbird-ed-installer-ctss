@@ -22,3 +22,8 @@ output "public_route_table_id" {
   description = "Public Route Table ID"
   value       = var.create_network == "true" ? aws_route_table.public[0].id : ""
 }
+
+output "security_group_id" {
+  description = "Security group ID for HTTP/HTTPS traffic"
+  value       = var.create_network == "true" ? aws_security_group.allow_http_https[0].id : ""
+}
