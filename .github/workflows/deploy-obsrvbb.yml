@@ -46,6 +46,8 @@ jobs:
 
       - name: Setup Helm
         uses: azure/setup-helm@v4
+        with:
+          version: v3.17.2
 
       - name: Get EKS kubeconfig
         run: |
@@ -55,7 +57,7 @@ jobs:
 
       - name: Install obsrvbb
         if: inputs.action == 'install'
-        working-directory: opentofu/aws/template
+        working-directory: ${{ inputs.environment_dir }}
         run: |
           chmod +x install.sh
           bash install.sh install_component "obsrvbb" </dev/null
