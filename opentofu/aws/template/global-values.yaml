@@ -47,6 +47,7 @@ global:
   sunbird_cloud_storage_provider: "aws"
   checkpoint_store_type: "s3"
   cloud_storage_region: "ap-south-1" # e.g., us-east-1
+
   # Network configuration (optional - set create_network: false if using existing VPC)
   create_network: true
   # vpc_id: "" # If create_network: false, provide existing VPC ID
@@ -114,14 +115,14 @@ global:
   cors_max_age_seconds: 3000        # Max-age for CORS preflight cache on cors-enabled buckets
 
   # IAM service account subjects (optional override — add/remove namespaces here)
-  service_account_subjects:
-    - "system:serviceaccount:sunbird:sunbird-sa"
-    - "system:serviceaccount:dataset-api:dataset-api-sa"
-    - "system:serviceaccount:flink:flink-sa"
-    - "system:serviceaccount:druid-raw:druid-raw-sa"
-    - "system:serviceaccount:secor:secor-sa"
-    - "system:serviceaccount:postgresql:postgresql-backup-sa"
-    - "system:serviceaccount:s3-exporter:s3-exporter-sa"
+  # service_account_subjects:
+  #   - "system:serviceaccount:sunbird:sunbird-sa"
+  #   - "system:serviceaccount:dataset-api:dataset-api-sa"
+  #   - "system:serviceaccount:flink:flink-sa"
+  #   - "system:serviceaccount:druid-raw:druid-raw-sa"
+  #   - "system:serviceaccount:secor:secor-sa"
+  #   - "system:serviceaccount:postgresql:postgresql-backup-sa"
+  #   - "system:serviceaccount:s3-exporter:s3-exporter-sa"
 
   # CloudWatch monitoring (replaces Prometheus/Grafana stack)
   enable_cloudwatch_observability: false
