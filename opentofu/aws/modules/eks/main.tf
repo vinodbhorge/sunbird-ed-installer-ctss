@@ -126,7 +126,7 @@ resource "aws_iam_openid_connect_provider" "oidc" {
 
 resource "aws_eks_node_group" "default" {
   cluster_name    = aws_eks_cluster.cluster.name
-  node_group_name = "${local.cluster_name}-node-group"
+  node_group_name = "${local.cluster_name}-node-group-1"
   node_role_arn   = aws_iam_role.eks_node.arn
   subnet_ids      = var.public_subnet_ids
 
