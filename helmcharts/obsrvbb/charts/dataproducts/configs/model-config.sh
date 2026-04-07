@@ -12,7 +12,7 @@ config() {
 		if [ ! -z "$2" ]; then keyword=$2; fi
 		case "$1" in
 		"wfs")
-		echo '{"search":{"type":"{{ .Values.global.cloud_storage_provider }}","queries":[{"bucket":"'$bucket'","prefix":"{{ .Values.dp_raw_telemetry_backup_location }}","endDate":"'$endDate'","delta":0}]},"model":"org.ekstep.analytics.model.WorkflowSummary","modelParams":{"apiVersion":"v2","storageKeyConfig":"storage.key.config", "storageSecretConfig":"storage.secret.config"},"output":[{"to":"console","params":{"printEvent": true}},{"to":"kafka","params":{"brokerList":"'$brokerList'","topic":"'$topic'"}}],"parallelization":8,"appName":"Workflow Summarizer","deviceMapping":true}'
+		echo '{"search":{"type":"{{ .Values.global.cloud_storage_provider }}","queries":[{"bucket":"'$bucket'","prefix":"{{ .Values.dp_raw_telemetry_backup_location }}","endDate":"2026-04-02","delta":0}]},"model":"org.ekstep.analytics.model.WorkflowSummary","modelParams":{"apiVersion":"v2","storageKeyConfig":"storage.key.config", "storageSecretConfig":"storage.secret.config"},"output":[{"to":"console","params":{"printEvent": true}},{"to":"kafka","params":{"brokerList":"'$brokerList'","topic":"'$topic'"}}],"parallelization":8,"appName":"Workflow Summarizer","deviceMapping":true}'
 		;;
         "*")
 		echo "Unknown model code"
