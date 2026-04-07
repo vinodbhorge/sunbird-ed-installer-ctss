@@ -124,9 +124,19 @@ resource "aws_iam_openid_connect_provider" "oidc" {
 # EKS Managed Node Group
 # -------------------------------
 
+# Regenerates when instance_type or disk_size changes, giving the new node group a unique name
+# so create_before_destroy can work (AWS rejects two node groups with the same name)
+resource "random_id" "node_group" {
+  byte_length = 4
+  keepers = {
+    instance_type = var.node_instance_type
+    disk_size     = var.node_disk_size_gb
+  }
+}
+
 resource "aws_eks_node_group" "default" {
   cluster_name    = aws_eks_cluster.cluster.name
-  node_group_name = "${local.cluster_name}-node-group"
+  node_group_name = "${local.cluster_name}-ng-${random_id.node_group.hex}"
   node_role_arn   = aws_iam_role.eks_node.arn
   subnet_ids      = var.public_subnet_ids
 
