@@ -67,10 +67,10 @@ global:
 
   # EKS configuration
   eks_cluster_version: "1.35"
-  eks_node_instance_type: "t3.xlarge"  # "m6a.2xlarge"
-  eks_node_disk_size_gb: 50
-  eks_node_count_min: 1
-  eks_node_count_max: 1
+  eks_node_instance_type: "t3.2xlarge"  # "m6a.2xlarge"
+  eks_node_disk_size_gb: 80
+  eks_node_count_min: 2
+  eks_node_count_max: 2
 
   # CloudWatch monitoring (replaces Prometheus/Grafana stack)
   enable_cloudwatch_observability: false
