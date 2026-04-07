@@ -7,6 +7,17 @@ on:
         description: "Path to OpenTofu environment directory (e.g. opentofu/aws/template)"
         required: true
         type: string
+      module:
+        description: "Module to provision (select 'all' to run all modules)"
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - network
+          - iam
+          - eks
+          - storage
       action:
         description: "Action to perform"
         required: true
@@ -50,6 +61,14 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Set working directory
+        run: |
+          if [ "${{ inputs.module }}" == "all" ]; then
+            echo "WORK_DIR=${{ inputs.environment_dir }}" >> $GITHUB_ENV
+          else
+            echo "WORK_DIR=${{ inputs.environment_dir }}/${{ inputs.module }}" >> $GITHUB_ENV
+          fi
+
       - name: Create Backend S3 Bucket
         working-directory: ${{ inputs.environment_dir }}
         run: |
@@ -60,32 +79,47 @@ jobs:
 
       - name: Terragrunt Init
         if: inputs.action == 'init'
-        working-directory: ${{ inputs.environment_dir }}
+        working-directory: ${{ env.WORK_DIR }}
         run: |
-          source tf.sh
-          terragrunt run --all init
+          source ${{ github.workspace }}/${{ inputs.environment_dir }}/tf.sh
+          if [ "${{ inputs.module }}" == "all" ]; then
+            terragrunt run --all init
+          else
+            terragrunt init
+          fi
 
       - name: Terragrunt Plan
         if: inputs.action == 'plan'
-        working-directory: ${{ inputs.environment_dir }}
+        working-directory: ${{ env.WORK_DIR }}
         run: |
-          source tf.sh
-          terragrunt run --all plan
+          source ${{ github.workspace }}/${{ inputs.environment_dir }}/tf.sh
+          if [ "${{ inputs.module }}" == "all" ]; then
+            terragrunt run --all plan
+          else
+            terragrunt plan
+          fi
 
       - name: Terragrunt Apply
         if: inputs.action == 'apply'
-        working-directory: ${{ inputs.environment_dir }}
+        working-directory: ${{ env.WORK_DIR }}
         run: |
-          source tf.sh
+          source ${{ github.workspace }}/${{ inputs.environment_dir }}/tf.sh
           export TF_INPUT=false
-          terragrunt run --all apply -- -auto-approve
+          if [ "${{ inputs.module }}" == "all" ]; then
+            terragrunt run --all apply -- -auto-approve
+          else
+            terragrunt apply -auto-approve
+          fi
 
-
-  # Please be cautious while running the destroy command as it will delete all the resources created by the apply command
+      # Please be cautious while running the destroy command as it will delete all the resources created by the apply command
       - name: Terragrunt Destroy
         if: inputs.action == 'destroy'
-        working-directory: ${{ inputs.environment_dir }}
+        working-directory: ${{ env.WORK_DIR }}
         run: |
-          source tf.sh
+          source ${{ github.workspace }}/${{ inputs.environment_dir }}/tf.sh
           export TF_INPUT=false
-          terragrunt run --all destroy -- -auto-approve
+          if [ "${{ inputs.module }}" == "all" ]; then
+            terragrunt run --all destroy -- -auto-approve
+          else
+            terragrunt destroy -auto-approve
+          fi
