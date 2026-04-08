@@ -200,12 +200,12 @@ confVolume: &confVolume
           - "/bin/sh"
           - "-c"
           - |
-            curl -o /data/analytics/spark-3.1.3-bin-hadoop3.2/jars/jetty-util-6.1.26.jar "https://repo1.maven.org/maven2/org/mortbay/jetty/jetty-util/6.1.26/jetty-util-6.1.26.jar"
-            curl -o /data/analytics/spark-3.1.3-bin-hadoop3.2/jars/config-1.3.3.jar "https://repo1.maven.org/maven2/com/typesafe/config/1.3.3/config-1.3.3.jar"
-            curl -o /data/analytics/spark-3.1.3-bin-hadoop3.2/jars/spark-sql_2.12-3.1.0-tests.jar "https://repo1.maven.org/maven2/org/apache/spark/spark-sql_2.12/3.1.0/spark-sql_2.12-3.1.0-tests.jar"
+            curl -o /data/analytics/spark-3.5.8-bin-hadoop3-scala2.13/jars/jetty-util-6.1.26.jar "https://repo1.maven.org/maven2/org/mortbay/jetty/jetty-util/6.1.26/jetty-util-6.1.26.jar"
+            curl -o /data/analytics/spark-3.5.8-bin-hadoop3-scala2.13/jars/config-1.3.3.jar "https://repo1.maven.org/maven2/com/typesafe/config/1.3.3/config-1.3.3.jar"
+            curl -o /data/analytics/spark-3.5.8-bin-hadoop3-scala2.13/jars/spark-sql_2.12-3.1.0-tests.jar "https://repo1.maven.org/maven2/org/apache/spark/spark-sql_2.12/3.1.0/spark-sql_2.12-3.1.0-tests.jar"
                        
-            cp /data/analytics/spark-conf/spark-defaults.conf /data/analytics/spark-3.1.3-bin-hadoop3.2/conf/
-            cp /data/analytics/spark-conf/spark-env.sh /data/analytics/spark-3.1.3-bin-hadoop3.2/conf/
+            cp /data/analytics/spark-conf/spark-defaults.conf /data/analytics/spark-3.5.8-bin-hadoop3-scala2.13/conf/
+            cp /data/analytics/spark-conf/spark-env.sh /data/analytics/spark-3.5.8-bin-hadoop3-scala2.13/conf/
             /opt/bitnami/scripts/spark/entrypoint.sh /opt/bitnami/scripts/spark/run.sh
 
       initContainers:
@@ -229,9 +229,9 @@ confVolume: &confVolume
               data_path="/data/analytics" # persistent path
               [[ -d $data_path ]] || mkdir -p $data_path
               # Download spark tarball
-              aws s3 cp "s3://{{ .Values.global.private_container_name }}/artifacts-{{.Values.global.release_version}}/spark-3.1.3-bin-hadoop3.2.tgz" /data/analytics/spark-3.1.3-bin-hadoop3.2.tgz
+              aws s3 cp "s3://{{ .Values.global.private_container_name }}/artifacts-{{.Values.global.release_version}}/spark-3.5.8-bin-hadoop3-scala2.13.tgz" /data/analytics/spark-3.5.8-bin-hadoop3-scala2.13.tgz
 
-              tar -xvf /data/analytics/spark-3.1.3-bin-hadoop3.2.tgz -C "/data/analytics"
+              tar -xvf /data/analytics/spark-3.5.8-bin-hadoop3-scala2.13.tgz -C "/data/analytics"
 
               #  dataproducts
               jar_location_sbob="$data_path/sunbird-obsrv-1.0-v3.zip"
@@ -299,7 +299,7 @@ global:
   spark: *spark
   keycloak_kid_keys_configmap: keycloak-kids-keys
   kong_desktop_device_consumer_names_for_opa: '["portal", "desktop"]'
-  spark_home: /data/analytics/spark-3.1.3-bin-hadoop3.2
+  spark_home: /data/analytics/spark-3.5.8-bin-hadoop3-scala2.13
 
 analytics:
   opa_enabled: true
