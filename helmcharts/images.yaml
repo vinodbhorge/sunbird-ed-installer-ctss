@@ -223,7 +223,7 @@ spark: &spark
   image:
     registry: bitnamilegacy
     repository: spark
-    tag: 3.2.4-debian-12-r21 
+    tag: 3.5.6-debian-12-r1
 
 # Internal block with pull secrets
 internal: &internal
