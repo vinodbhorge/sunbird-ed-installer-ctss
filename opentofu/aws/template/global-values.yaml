@@ -93,10 +93,10 @@ global:
 
   # EKS configuration
   eks_cluster_version: "1.35"
-  eks_node_instance_type: "m6a.2xlarge"
-  eks_node_disk_size_gb: 70
-  eks_node_count_min: 4
-  eks_node_count_max: 5
+  eks_node_instance_type: "t2.2xlarge"
+  eks_node_disk_size_gb: 50
+  eks_node_count_min: 2
+  eks_node_count_max: 2
   # eks_endpoint_public_access: true  # Expose EKS API server publicly
   # eks_endpoint_private_access: false # Expose EKS API server within VPC
   # eks_node_count_desired: 3          # pre-warm above min
