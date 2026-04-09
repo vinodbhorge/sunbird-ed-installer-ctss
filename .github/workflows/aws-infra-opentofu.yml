@@ -24,6 +24,7 @@ on:
         type: choice
         options:
           - init
+          - init-reconfigure
           - plan
           - apply
           - destroy
@@ -86,6 +87,17 @@ jobs:
             terragrunt run --all init
           else
             terragrunt init
+          fi
+
+      - name: Terragrunt Init Reconfigure
+        if: inputs.action == 'init-reconfigure'
+        working-directory: ${{ env.WORK_DIR }}
+        run: |
+          source ${{ github.workspace }}/${{ inputs.environment_dir }}/tf.sh
+          if [ "${{ inputs.module }}" == "all" ]; then
+            terragrunt run --all init -- -reconfigure
+          else
+            terragrunt init -reconfigure
           fi
 
       - name: Terragrunt Plan
