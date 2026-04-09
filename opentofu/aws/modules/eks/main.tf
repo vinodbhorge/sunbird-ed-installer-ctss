@@ -188,45 +188,6 @@ module "ebs_csi_driver_irsa" {
   
   tags = local.common_tags
 }
-
-# -------------------------------
-# AWS Load Balancer Controller IRSA role
-# -------------------------------
-
-# module "aws_load_balancer_controller_irsa" {
-#   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-#   version = "~> 5.48"
-  
-#   role_name_prefix = "${local.cluster_name}-aws-lb-controller-"
-  
-#   attach_load_balancer_controller_policy = true
-  
-#   oidc_providers = {
-#     main = {
-#       provider_arn               = aws_iam_openid_connect_provider.oidc.arn
-#       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
-#     }
-#   }
-  
-#   tags = local.common_tags
-# }
-
-# -------------------------------
-# kubeconfig updater (local-exec)
-# -------------------------------
-
-resource "null_resource" "update_kubeconfig" {
-  triggers = {
-    cluster_endpoint = aws_eks_cluster.cluster.endpoint
-  }
-  
-#   provisioner "local-exec" {
-#     command = "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.cluster.name}"
-#   }
-  
-#   depends_on = [aws_eks_cluster.cluster]
-# }
-
 # -------------------------------
 # EKS Add-on: AWS EBS CSI Driver
 # Installs the aws-ebs-csi-driver addon and binds it to the IRSA role
@@ -309,4 +270,3 @@ resource "aws_eks_addon" "cloudwatch_observability" {
     aws_iam_role_policy_attachment.cloudwatch_observability_policy
   ]
 }
-
