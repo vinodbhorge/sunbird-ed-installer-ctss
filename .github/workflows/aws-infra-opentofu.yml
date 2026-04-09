@@ -7,15 +7,39 @@ on:
         description: "Path to OpenTofu environment directory (e.g. opentofu/aws/template)"
         required: true
         type: string
+      environment:
+        description: "GitHub environment to deploy to"
+        required: true
+        type: environment
+      module:
+        description: "Module to provision (select 'all' to run all modules)"
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - network
+          - iam
+          - eks
+          - storage
       action:
         description: "Action to perform"
         required: true
         type: choice
         options:
           - init
+          - init-reconfigure
           - plan
           - apply
           - destroy
+      destroy_confirmation:
+        description: "Type 'DESTROY' to confirm destroy action (required for destroy)"
+        required: false
+        type: string
+
+concurrency:
+  group: tofu-${{ inputs.environment_dir }}-${{ inputs.module }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -23,26 +47,48 @@ permissions:
 jobs:
   terragrunt:
     runs-on: ubuntu-latest
-    environment: test
+    environment: ${{ inputs.environment }}
+    timeout-minutes: 60
     permissions:
       id-token: write
       contents: read
     env:
       TG_TF_PATH: tofu
+      TF_INPUT: false
+      TERRAGRUNT_VERSION: "v0.96.0"
     steps:
+      - name: Validate Destroy Confirmation
+        if: inputs.action == 'destroy'
+        run: |
+          if [ "${{ inputs.destroy_confirmation }}" != "DESTROY" ]; then
+            echo "::error::Destroy requires the 'destroy_confirmation' input to be set to 'DESTROY'."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup OpenTofu
-        uses: opentofu/setup-opentofu@v1
+        uses: opentofu/setup-opentofu@v1.0.4
         with:
           tofu_version: "1.11.1"
 
-      - name: Setup Terragrunt
+      - name: Cache Terragrunt binary
+        id: cache-terragrunt
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/bin/terragrunt
+          key: terragrunt-${{ env.TERRAGRUNT_VERSION }}-linux-amd64
+
+      - name: Install Terragrunt
+        if: steps.cache-terragrunt.outputs.cache-hit != 'true'
         run: |
-          wget -O terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v0.96.0/terragrunt_linux_amd64
-          chmod +x terragrunt
-          sudo mv terragrunt /usr/local/bin/
+          mkdir -p ~/.local/bin
+          wget -q -O ~/.local/bin/terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/${{ env.TERRAGRUNT_VERSION }}/terragrunt_linux_amd64
+          chmod +x ~/.local/bin/terragrunt
+
+      - name: Add Terragrunt to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -50,42 +96,73 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Set working directory
+        run: |
+          if [ "${{ inputs.module }}" == "all" ]; then
+            echo "WORK_DIR=${{ inputs.environment_dir }}" >> $GITHUB_ENV
+          else
+            echo "WORK_DIR=${{ inputs.environment_dir }}/${{ inputs.module }}" >> $GITHUB_ENV
+          fi
+
       - name: Create Backend S3 Bucket
         working-directory: ${{ inputs.environment_dir }}
-        run: |
-          chmod +x create_tf_backend.sh
-          ./create_tf_backend.sh
-          ls -la
-          source tf.sh
+        run: ./create_tf_backend.sh
 
       - name: Terragrunt Init
-        if: inputs.action == 'init'
-        working-directory: ${{ inputs.environment_dir }}
+        if: inputs.action == 'init' || inputs.action == 'init-reconfigure'
+        working-directory: ${{ env.WORK_DIR }}
         run: |
-          source tf.sh
-          terragrunt run --all init
+          source ${{ github.workspace }}/${{ inputs.environment_dir }}/tf.sh
+          RECONFIGURE_FLAG=""
+          [ "${{ inputs.action }}" == "init-reconfigure" ] && RECONFIGURE_FLAG="-reconfigure"
+          if [ "${{ inputs.module }}" == "all" ]; then
+            if [ -n "$RECONFIGURE_FLAG" ]; then
+              terragrunt run --all init -- $RECONFIGURE_FLAG
+            else
+              terragrunt run --all init
+            fi
+          else
+            terragrunt init $RECONFIGURE_FLAG
+          fi
 
       - name: Terragrunt Plan
         if: inputs.action == 'plan'
-        working-directory: ${{ inputs.environment_dir }}
+        working-directory: ${{ env.WORK_DIR }}
         run: |
-          source tf.sh
-          terragrunt run --all plan
+          source ${{ github.workspace }}/${{ inputs.environment_dir }}/tf.sh
+          if [ "${{ inputs.module }}" == "all" ]; then
+            terragrunt run --all plan 2>&1 | tee ${{ github.workspace }}/plan-output.txt
+          else
+            terragrunt plan 2>&1 | tee ${{ github.workspace }}/plan-output.txt
+          fi
+
+      - name: Upload Plan Output
+        if: inputs.action == 'plan'
+        uses: actions/upload-artifact@v4
+        with:
+          name: plan-${{ inputs.module }}-${{ github.run_id }}
+          path: ${{ github.workspace }}/plan-output.txt
+          retention-days: 7
 
       - name: Terragrunt Apply
         if: inputs.action == 'apply'
-        working-directory: ${{ inputs.environment_dir }}
+        working-directory: ${{ env.WORK_DIR }}
         run: |
-          source tf.sh
-          export TF_INPUT=false
-          terragrunt run --all apply -- -auto-approve
+          source ${{ github.workspace }}/${{ inputs.environment_dir }}/tf.sh
+          if [ "${{ inputs.module }}" == "all" ]; then
+            terragrunt run --all apply -- -auto-approve
+          else
+            terragrunt apply -auto-approve
+          fi
 
-
-  # Please be cautious while running the destroy command as it will delete all the resources created by the apply command
+      # Please be cautious: destroy will permanently delete all resources created by apply
       - name: Terragrunt Destroy
         if: inputs.action == 'destroy'
-        working-directory: ${{ inputs.environment_dir }}
+        working-directory: ${{ env.WORK_DIR }}
         run: |
-          source tf.sh
-          export TF_INPUT=false
-          terragrunt run --all destroy -- -auto-approve
+          source ${{ github.workspace }}/${{ inputs.environment_dir }}/tf.sh
+          if [ "${{ inputs.module }}" == "all" ]; then
+            terragrunt run --all destroy -- -auto-approve
+          else
+            terragrunt destroy -auto-approve
+          fi

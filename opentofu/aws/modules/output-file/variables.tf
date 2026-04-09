@@ -24,13 +24,15 @@ variable "aws_s3_private_bucket" {
 }
 
 variable "aws_s3_dial_bucket" {
-  description = "DIAL state S3 bucket name"
+  description = "DIAL state S3 bucket name. Null when not provisioned."
   type        = string
+  default     = null
 }
 
 variable "aws_s3_velero_bucket" {
-  description = "Velero backup S3 bucket name"
+  description = "Velero backup S3 bucket name. Null when not provisioned."
   type        = string
+  default     = null
 }
 
 variable "aws_region" {
@@ -54,13 +56,21 @@ variable "sunbird_sa_role_arn" {
 }
 
 variable "velero_sa_role_arn" {
-  description = "ARN of Velero service account IAM role"
+  description = "ARN of Velero service account IAM role. Null when Velero is not enabled."
   type        = string
+  default     = null
+}
+
+variable "dial_sa_role_arn" {
+  description = "ARN of DIAL service account IAM role. Null when DIAL is not enabled."
+  type        = string
+  default     = null
 }
 
 variable "private_ingressgateway_ip" {
-  description = "Private ingress gateway IP/hostname"
+  description = "Private ingress gateway IP/hostname. Null when not yet deployed."
   type        = string
+  default     = null
 }
 
 variable "encryption_string" {
@@ -84,16 +94,4 @@ variable "cloud_storage_provider" {
 variable "base_location" {
   description = "Base location for file paths"
   type        = string
-}
-
-variable "cloud_storage_access_key" {
-  description = "Storage user access key ID"
-  type        = string
-  sensitive   = true
-}
-
-variable "cloud_storage_secret_key" {
-  description = "Storage user secret access key"
-  type        = string
-  sensitive   = true
 }
