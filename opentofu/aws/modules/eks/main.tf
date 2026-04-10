@@ -131,8 +131,8 @@ resource "aws_iam_openid_connect_provider" "oidc" {
 # create_before_destroy = true ensures the replacement group is running before the old one
 # is deleted, but expect a brief period of reduced capacity during the transition.
 #
-# IMPORTANT: Draining workloads (or using Cluster Autoscaler with PodDisruptionBudgets) before
-# changing instance_type or disk_size is strongly recommended to avoid application downtime.
+# IMPORTANT: Draining workloads before changing instance_type or disk_size is strongly
+# recommended to avoid application downtime. See MODULES.md § EKS for the procedure.
 resource "random_id" "node_group" {
   byte_length = 4
   keepers = {
@@ -148,13 +148,7 @@ resource "aws_eks_node_group" "default" {
   subnet_ids      = var.public_subnet_ids
 
   scaling_config {
-    # On initial creation use node_count_desired if set, otherwise node_count_max.
-    # Starting at max capacity ensures the replacement group is fully provisioned before
-    # the old group is deleted, preventing a period of under-capacity during node group
-    # replacement (e.g. when instance_type or disk_size changes).
-    # Cluster Autoscaler will scale down to the right count once it takes over;
-    # the ignore_changes lifecycle rule prevents OpenTofu from fighting it afterwards.
-    desired_size = coalesce(var.node_count_desired, var.node_count_max)
+    desired_size = coalesce(var.node_count_desired, var.node_count_min)
     min_size     = var.node_count_min
     max_size     = var.node_count_max
   }
@@ -176,11 +170,6 @@ resource "aws_eks_node_group" "default" {
 
   lifecycle {
     create_before_destroy = true
-
-    # Prevent OpenTofu from resetting desired_size after Cluster Autoscaler has adjusted it.
-    # Without this, every apply would reset the count back to the configured value,
-    # causing unnecessary node churn and potential evictions.
-    ignore_changes = [scaling_config[0].desired_size]
   }
 
   # Give AWS enough time to provision or drain nodes during create-before-destroy replacements.
