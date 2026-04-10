@@ -148,7 +148,13 @@ resource "aws_eks_node_group" "default" {
   subnet_ids      = var.public_subnet_ids
 
   scaling_config {
-    desired_size = coalesce(var.node_count_desired, var.node_count_min)
+    # On initial creation use node_count_desired if set, otherwise node_count_max.
+    # Starting at max capacity ensures the replacement group is fully provisioned before
+    # the old group is deleted, preventing a period of under-capacity during node group
+    # replacement (e.g. when instance_type or disk_size changes).
+    # Cluster Autoscaler will scale down to the right count once it takes over;
+    # the ignore_changes lifecycle rule prevents OpenTofu from fighting it afterwards.
+    desired_size = coalesce(var.node_count_desired, var.node_count_max)
     min_size     = var.node_count_min
     max_size     = var.node_count_max
   }
@@ -170,6 +176,19 @@ resource "aws_eks_node_group" "default" {
 
   lifecycle {
     create_before_destroy = true
+
+    # Prevent OpenTofu from resetting desired_size after Cluster Autoscaler has adjusted it.
+    # Without this, every apply would reset the count back to the configured value,
+    # causing unnecessary node churn and potential evictions.
+    ignore_changes = [scaling_config[0].desired_size]
+  }
+
+  # Give AWS enough time to provision or drain nodes during create-before-destroy replacements.
+  # Default timeouts are often too short when replacing a large node group.
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
   }
 }
 
