@@ -51,4 +51,11 @@ variable "buckets" {
     ])
     error_message = "Each bucket 'type' must be either \"public\" or \"private\"."
   }
+
+  # Map keys are inherently unique in HCL/YAML, but this validation documents the intent
+  # explicitly and guards against future refactors that change the type to a list.
+  validation {
+    condition     = length(var.buckets) == length(distinct(keys(var.buckets)))
+    error_message = "Each bucket entry must have a unique key."
+  }
 }

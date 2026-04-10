@@ -30,8 +30,13 @@ This guide covers the **Network** and **Storage** modules in detail.
    - [Scenario C — Mixed Public + Private](#scenario-c--mixed-public--private)
    - [Field Reference](#buckets-field-reference)
    - [Auto-provisioned resources](#what-gets-provisioned-automatically-1)
-3. [Full global-values.yaml Reference](#3-full-global-valuesyaml-reference)
-4. [Module Outputs Reference](#4-module-outputs-reference)
+3. [EKS Module](#3-eks-module)
+   - [Changing instance type or disk size](#changing-instance-type-or-disk-size)
+   - [EBS CSI addon version](#ebs-csi-addon-version)
+   - [Random provider requirement](#random-provider-requirement)
+4. [Full global-values.yaml Reference](#4-full-global-valuesyaml-reference)
+5. [Module Outputs Reference](#5-module-outputs-reference)
+6. [Migration Guide](#6-migration-guide)
 
 ---
 
@@ -187,7 +192,7 @@ global:
 |---|---|---|
 | `create_network` | `true` | `true` = create VPC; `false` = use existing |
 | `vpc_cidr` | `"10.0.0.0/16"` | CIDR block for the new VPC |
-| `nat_gateway_enabled` | `true` | Create a NAT Gateway for private subnets. No effect if no private subnets are defined |
+| `nat_gateway_enabled` | `false` | Create a NAT Gateway for private subnets. No effect if no private subnets are defined. Each NAT GW costs ~$32/month per AZ — opt in explicitly |
 | `ingress_cidr_blocks` | `["0.0.0.0/0"]` | Source CIDRs allowed on HTTP (80) and HTTPS (443) inbound rules |
 
 ---
@@ -338,7 +343,69 @@ Public-access block flags by type:
 
 ---
 
-## 3. Full `global-values.yaml` Reference
+## 3. EKS Module
+
+### Changing instance type or disk size
+
+> **Causes downtime — read this before making changes.**
+
+The EKS module uses a `random_id` resource with `keepers` tied to `node_instance_type` and
+`node_disk_size_gb`. When either value changes, OpenTofu generates a new hex suffix for the
+node group name, triggering a **destroy-then-create** cycle (AWS does not support in-place
+updates to these properties).
+
+`create_before_destroy = true` is set on the node group resource, so the replacement group is
+brought up before the old one is deleted. However, you should still expect a period of **reduced
+cluster capacity** during the transition.
+
+**Recommended procedure before changing `eks_node_instance_type` or `eks_node_disk_size_gb`:**
+
+1. Cordon all nodes in the current node group so no new pods are scheduled there:
+   ```bash
+   kubectl cordon -l eks.amazonaws.com/nodegroup=<current-node-group-name>
+   ```
+2. Drain workloads gracefully (respecting PodDisruptionBudgets):
+   ```bash
+   kubectl drain -l eks.amazonaws.com/nodegroup=<current-node-group-name> \
+     --ignore-daemonsets --delete-emptydir-data --grace-period=60
+   ```
+3. Apply the change:
+   ```bash
+   # run via the GitHub Actions workflow or locally with Terragrunt
+   terragrunt apply
+   ```
+4. Verify the new node group is healthy and all pods have rescheduled before proceeding.
+
+---
+
+### EBS CSI addon version
+
+Set `eks_ebs_csi_addon_version` in `global-values.yaml` to pin the addon to a specific release:
+
+```yaml
+global:
+  eks_ebs_csi_addon_version: "v1.28.0-eksbuild.1"
+```
+
+Omit the key (or leave it `null`) to let AWS automatically select the latest version that is
+compatible with your cluster version. This is the recommended default for non-production
+environments; production clusters should pin to a tested version to avoid surprise upgrades.
+
+---
+
+### Random provider requirement
+
+The EKS module depends on the `hashicorp/random` provider. If you are upgrading an existing
+deployment, run `tofu init` before the next `tofu apply` so the provider is fetched:
+
+```bash
+cd opentofu/aws/<environment>/eks
+terragrunt init
+```
+
+---
+
+## 4. Full `global-values.yaml` Reference
 
 Complete annotated reference for all network and storage configuration keys under `global:`.
 
@@ -427,7 +494,7 @@ global:
 
 ---
 
-## 4. Module Outputs Reference
+## 5. Module Outputs Reference
 
 ### Network module
 
@@ -465,3 +532,99 @@ global:
 > if the corresponding key is absent from `var.buckets`. The generic `buckets` output
 > always reflects exactly what was provisioned and is the recommended output for
 > new consumers.
+
+---
+
+## 6. Migration Guide
+
+### Upgrading from the previous single-file Terraform layout
+
+This section covers breaking changes introduced in the optimisation refactor and how to adapt
+existing environment configurations.
+
+---
+
+#### `create_network`: string → bool
+
+**Old config (broken):**
+```yaml
+global:
+  create_network: "true"   # ← quoted string no longer accepted
+```
+
+**New config:**
+```yaml
+global:
+  create_network: true     # ← bare boolean
+```
+
+The `create_network` variable type changed from `string` to `bool`. YAML quoted strings
+(`"true"`) are passed as strings to OpenTofu, which will now reject them with a type error.
+Update any existing `global-values.yaml` files to use unquoted booleans.
+
+---
+
+#### Storage module: individual bucket resources → dynamic `for_each`
+
+The old module created separate `aws_s3_bucket` resources named `public` and `private`.
+The new module creates all buckets dynamically from the `buckets` map in `global-values.yaml`.
+
+This is a **state-breaking change** for existing deployments — Terraform/OpenTofu will want
+to destroy the old individually-named bucket resources and create new ones under the
+`for_each` key path.
+
+**To migrate without destroying your buckets:**
+
+1. Run `tofu state list` and identify the old bucket resources, e.g.:
+   ```
+   module.storage.aws_s3_bucket.public
+   module.storage.aws_s3_bucket.private
+   ```
+
+2. Move each resource to the new address using `tofu state mv`:
+   ```bash
+   tofu state mv \
+     'module.storage.aws_s3_bucket.public' \
+     'module.storage.aws_s3_bucket.buckets["public"]'
+
+   tofu state mv \
+     'module.storage.aws_s3_bucket.private' \
+     'module.storage.aws_s3_bucket.buckets["private"]'
+   ```
+
+3. Repeat for `aws_s3_bucket_public_access_block`, `aws_s3_bucket_policy`,
+   `aws_s3_bucket_versioning`, and `aws_s3_bucket_cors_configuration` resources as needed.
+
+4. Run `tofu plan` and confirm **no destroys** are shown before applying.
+
+---
+
+#### `nat_gateway_enabled`: default changed from `true` → `false`
+
+Existing environments that relied on the previous default (`true`) and use private subnets
+**must now explicitly set** `nat_gateway_enabled: true` in `global-values.yaml`, or their NAT
+Gateway will be destroyed on the next apply.
+
+```yaml
+global:
+  nat_gateway_enabled: true   # ← add this if you have private subnets
+```
+
+---
+
+#### EKS: `hashicorp/random` provider now required
+
+Run `tofu init` (or `terragrunt init`) in the `eks` module directory before applying to any
+existing cluster. Without it, OpenTofu will error with "provider not installed".
+
+---
+
+#### `private_ingressgateway_ip` is now nullable
+
+This output previously had a default value. It now returns `null` when not set. Any downstream
+automation or Helm values that reference this output without a null check must be updated:
+
+```yaml
+# Example guard in a Helm values file
+privateIngressIP: {{ .Values.global.private_ingressgateway_ip | default "" }}
+```

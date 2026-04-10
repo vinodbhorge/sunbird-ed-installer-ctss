@@ -87,9 +87,10 @@ global:
     #   availability_zone: "b"
     #   cidr_netnum: 202
 
-  # NAT Gateway — set to false to keep private subnets fully isolated (saves cost in non-prod).
+  # NAT Gateway — default: false. Set to true only when private subnets need outbound internet
+  # access (e.g. pulling images, calling external APIs). Each NAT Gateway costs ~$32/month per AZ.
   # Has no effect when no private subnets are defined.
-  # nat_gateway_enabled: true
+  # nat_gateway_enabled: false
 
   # EKS configuration
   eks_cluster_version: "1.35"

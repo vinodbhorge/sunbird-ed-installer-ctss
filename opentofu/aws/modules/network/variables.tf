@@ -67,10 +67,15 @@ variable "nat_gateway_enabled" {
   description = <<-EOT
     Create a NAT Gateway so private subnets can reach the internet.
     Requires at least one public subnet (NAT GW is placed in the first public subnet).
-    Set to false for fully isolated private subnets or to save cost in non-prod environments.
+
+    Defaults to false. Set to true only when private subnets need outbound internet access
+    (e.g. pulling container images, calling external APIs). Each NAT Gateway incurs ~$32/month
+    per AZ in additional AWS charges — opt in explicitly rather than enabling it by default.
+
+    Has no effect when no private subnets are defined.
   EOT
   type    = bool
-  default = true
+  default = false
 }
 
 variable "ingress_cidr_blocks" {

@@ -124,8 +124,15 @@ resource "aws_iam_openid_connect_provider" "oidc" {
 # EKS Managed Node Group
 # -------------------------------
 
-# Regenerates when instance_type or disk_size changes, giving the new node group a unique name
-# so create_before_destroy can work (AWS rejects two node groups with the same name)
+# Why random_id keepers?
+# AWS does not support in-place changes to instance_type or disk_size on a managed node group —
+# it must be destroyed and recreated. The random_id keepers tie the hex suffix to these two
+# values, so changing either one forces a new random_id (and therefore a new node group name).
+# create_before_destroy = true ensures the replacement group is running before the old one
+# is deleted, but expect a brief period of reduced capacity during the transition.
+#
+# IMPORTANT: Draining workloads (or using Cluster Autoscaler with PodDisruptionBudgets) before
+# changing instance_type or disk_size is strongly recommended to avoid application downtime.
 resource "random_id" "node_group" {
   byte_length = 4
   keepers = {

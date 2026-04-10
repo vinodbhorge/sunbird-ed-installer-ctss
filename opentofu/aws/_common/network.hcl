@@ -30,8 +30,8 @@ inputs = {
     public-b = { type = "public", availability_zone = "b", cidr_netnum = 102 }
   })
 
-  # NAT Gateway (optional override — default true when private subnets exist)
-  nat_gateway_enabled = lookup(local.global_vars.global, "nat_gateway_enabled", true)
+  # NAT Gateway (optional override — default false; set true only if private subnets need internet egress)
+  nat_gateway_enabled = lookup(local.global_vars.global, "nat_gateway_enabled", false)
 
   # Security group ingress (optional override)
   ingress_cidr_blocks = lookup(local.global_vars.global, "ingress_cidr_blocks", ["0.0.0.0/0"])
