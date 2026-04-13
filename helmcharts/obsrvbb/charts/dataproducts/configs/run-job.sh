@@ -19,9 +19,13 @@ echo "Starting the job - $1" >> "$DP_LOGS/$today-job-execution.log"
 
 echo "Job modelName - $job_id" >> "$DP_LOGS/$today-job-execution.log"
 
+# Create logs directory for joblog.log
+mkdir -p /data/analytics/scripts/logs
+
 nohup $SPARK_HOME/bin/spark-submit \
 --conf spark.jars.ivy=/tmp/.ivy \
---conf spark.driver.extraJavaOptions='-Dconfig.file=/data/analytics/scripts/common.conf' \
+--conf spark.driver.extraJavaOptions='-Dconfig.file=/data/analytics/scripts/common.conf -Dlog4j.configurationFile=log4j2.xml -DbaseDir=/data/analytics/scripts/logs -DREDir=/data/analytics/scripts/logs' \
+--conf spark.executor.extraJavaOptions='-Dlog4j.configurationFile=log4j2.xml -DbaseDir=/data/analytics/scripts/logs -DREDir=/data/analytics/scripts/logs' \
 --master 'local[*]' \
 --jars $MODELS_HOME/analytics-framework-2.0.jar,$MODELS_HOME/scruid_2.12-2.5.0.jar,$MODELS_HOME/batch-models-2.0.jar \
 --class org.ekstep.analytics.job.JobExecutor \
