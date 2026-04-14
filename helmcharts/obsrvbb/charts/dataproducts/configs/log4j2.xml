@@ -43,6 +43,7 @@
         <Loggers>
             <Logger name="org.ekstep.analytics" level="info" additivity="false">
                 <AppenderRef ref="Async" />
+                <AppenderRef ref="Console" />
             </Logger>
             <Logger name="org.ekstep.analytics.model" level="debug" additivity="false">
                 <AppenderRef ref="RE-RollingFileAppender" />
