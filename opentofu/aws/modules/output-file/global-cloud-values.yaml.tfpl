@@ -2,8 +2,6 @@ global:
   cloud_storage_provider: ${cloud_storage_provider}
   cloud_storage_region: ${aws_region}
   object_storage_endpoint: s3.${aws_region}.amazonaws.com
-  cloud_storage_access_key: ${cloud_storage_access_key}
-  cloud_storage_secret_key: ${cloud_storage_secret_key}
   public_container_name: ${aws_s3_public_bucket}
   private_container_name: ${aws_s3_private_bucket}
   dial_state_container_public: ${aws_s3_dial_bucket}

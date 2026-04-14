@@ -11,6 +11,10 @@ locals {
 
   enable_cloudwatch_observability = try(local.global_vars.global.enable_cloudwatch_observability, false)
   cloudwatch_enabled_log_types    = try(local.global_vars.global.cloudwatch_enabled_log_types, ["api", "audit", "authenticator", "controllerManager", "scheduler"])
+  endpoint_public_access          = try(local.global_vars.global.eks_endpoint_public_access, true)
+  endpoint_private_access         = try(local.global_vars.global.eks_endpoint_private_access, false)
+  node_count_desired              = try(local.global_vars.global.eks_node_count_desired, null)
+  ebs_csi_addon_version           = try(local.global_vars.global.eks_ebs_csi_addon_version, null)
 }
 
 terraform {
@@ -42,4 +46,8 @@ inputs = {
   enable_cloudwatch_observability = local.enable_cloudwatch_observability
   cloudwatch_enabled_log_types    = local.cloudwatch_enabled_log_types
   security_group_ids              = [dependency.network.outputs.security_group_id]
+  endpoint_public_access          = local.endpoint_public_access
+  endpoint_private_access         = local.endpoint_private_access
+  node_count_desired              = local.node_count_desired
+  ebs_csi_addon_version           = local.ebs_csi_addon_version
 }

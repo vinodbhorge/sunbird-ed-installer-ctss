@@ -81,14 +81,14 @@ resource "aws_iam_role_policy_attachment" "node_AmazonEKS_CNI_Policy" {
 
 resource "aws_eks_cluster" "cluster" {
   name     = local.cluster_name
-  version  = "${var.cluster_version}"
+  version  = var.cluster_version
   role_arn = aws_iam_role.eks_cluster.arn
 
   vpc_config {
     subnet_ids         = var.public_subnet_ids
     security_group_ids = var.security_group_ids
-    endpoint_public_access  = true
-    endpoint_private_access = false
+    endpoint_public_access  = var.endpoint_public_access
+    endpoint_private_access = var.endpoint_private_access
   }
 
   enabled_cluster_log_types = var.cloudwatch_enabled_log_types
@@ -124,14 +124,31 @@ resource "aws_iam_openid_connect_provider" "oidc" {
 # EKS Managed Node Group
 # -------------------------------
 
+# Why random_id keepers?
+# AWS does not support in-place changes to instance_type or disk_size on a managed node group —
+# it must be destroyed and recreated. The random_id keepers tie the hex suffix to these two
+# values, so changing either one forces a new random_id (and therefore a new node group name).
+# create_before_destroy = true ensures the replacement group is running before the old one
+# is deleted, but expect a brief period of reduced capacity during the transition.
+#
+# IMPORTANT: Draining workloads before changing instance_type or disk_size is strongly
+# recommended to avoid application downtime. See MODULES.md § EKS for the procedure.
+resource "random_id" "node_group" {
+  byte_length = 4
+  keepers = {
+    instance_type = var.node_instance_type
+    disk_size     = var.node_disk_size_gb
+  }
+}
+
 resource "aws_eks_node_group" "default" {
   cluster_name    = aws_eks_cluster.cluster.name
-  node_group_name = "${local.cluster_name}-node-group-1"
+  node_group_name = "${local.cluster_name}-ng-${random_id.node_group.hex}"
   node_role_arn   = aws_iam_role.eks_node.arn
   subnet_ids      = var.public_subnet_ids
 
   scaling_config {
-    desired_size = var.node_count_min
+    desired_size = coalesce(var.node_count_desired, var.node_count_min)
     min_size     = var.node_count_min
     max_size     = var.node_count_max
   }
@@ -153,6 +170,14 @@ resource "aws_eks_node_group" "default" {
 
   lifecycle {
     create_before_destroy = true
+  }
+
+  # Give AWS enough time to provision or drain nodes during create-before-destroy replacements.
+  # Default timeouts are often too short when replacing a large node group.
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
   }
 }
 
@@ -178,45 +203,6 @@ module "ebs_csi_driver_irsa" {
   
   tags = local.common_tags
 }
-
-# -------------------------------
-# AWS Load Balancer Controller IRSA role
-# -------------------------------
-
-# module "aws_load_balancer_controller_irsa" {
-#   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-#   version = "~> 5.48"
-  
-#   role_name_prefix = "${local.cluster_name}-aws-lb-controller-"
-  
-#   attach_load_balancer_controller_policy = true
-  
-#   oidc_providers = {
-#     main = {
-#       provider_arn               = aws_iam_openid_connect_provider.oidc.arn
-#       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
-#     }
-#   }
-  
-#   tags = local.common_tags
-# }
-
-# -------------------------------
-# kubeconfig updater (local-exec)
-# -------------------------------
-
-# resource "null_resource" "update_kubeconfig" {
-#   triggers = {
-#     cluster_endpoint = aws_eks_cluster.cluster.endpoint
-#   }
-  
-#   provisioner "local-exec" {
-#     command = "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.cluster.name}"
-#   }
-  
-#   depends_on = [aws_eks_cluster.cluster]
-# }
-
 # -------------------------------
 # EKS Add-on: AWS EBS CSI Driver
 # Installs the aws-ebs-csi-driver addon and binds it to the IRSA role
@@ -229,8 +215,8 @@ resource "aws_eks_addon" "ebs_csi" {
   # Use the IRSA role created above for the controller service account
   service_account_role_arn = module.ebs_csi_driver_irsa.iam_role_arn
 
-  # Let AWS pick the latest compatible version unless specified
-  # addon_version = var.ebs_csi_addon_version
+  # Pin to a specific version or leave null to let AWS pick the latest compatible version
+  addon_version = var.ebs_csi_addon_version
 
   # Ensure the addon can reconcile any existing resources
   resolve_conflicts_on_create = "OVERWRITE"
@@ -299,32 +285,3 @@ resource "aws_eks_addon" "cloudwatch_observability" {
     aws_iam_role_policy_attachment.cloudwatch_observability_policy
   ]
 }
-
-# Create internal load balancer for private ingress
-# resource "kubernetes_service" "private_lb_placeholder" {
-#   metadata {
-#     name      = "private-lb-placeholder"
-#     namespace = "default"
-#     annotations = {
-#       "service.beta.kubernetes.io/aws-load-balancer-type"                              = "nlb"
-#       "service.beta.kubernetes.io/aws-load-balancer-internal"                          = "true"
-#       "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
-#     }
-#   }
-  
-#   spec {
-#     type = "LoadBalancer"
-    
-#     port {
-#       port        = 80
-#       target_port = 80
-#       protocol    = "TCP"
-#     }
-    
-#     selector = {
-#       app = "private-lb-placeholder"
-#     }
-#   }
-  
-#   depends_on = [aws_eks_cluster.cluster, aws_eks_node_group.default]
-# }
